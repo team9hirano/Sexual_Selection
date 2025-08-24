@@ -6,13 +6,15 @@
 
 #define LH	1000	//10000
 #define LV	1000	//10000
-#define K  0.1
+#define K  0.004
 #define u	0.3
 #define a	3.0
-#define tend	2000
+// #define tend	40000//4000
 
 int main(void)
 {
+	//新しく挿入
+	int tend;
 	int **maleT, *base_maleT;
 	int **maleP, *base_maleP;
 	int **femaleT, *base_femaleT;
@@ -22,14 +24,14 @@ int main(void)
 	int **femaleTdummy, *base_femaleTdummy;
 	int **femalePdummy, *base_femalePdummy;
 	double initT2, initP2;
-	int k, k2, i, j, i2, j2, t, ok;
+	int k, k2, i, j, i2, j2, t, ok,x;
 	int maleI, maleJ,femaleI,femaleJ;
 	int numMT1, numMT2, numMP1, numMP2;
 	int numFT1, numFT2, numFP1, numFP2;
-	double rnd, rnd2, sum1, sum2, sum3, sum4;
+	double rnd, rnd2, sum1, sum2, sum3, sum4,y,z;
 	int maleT0, maleP0,femaleT0,femaleP0;
-    FILE *gp,*data1,*data2;
-    char *data_file1,*data_file2;
+    FILE *gp,*data1,*data2,*data3;
+    char *data_file1,*data_file2,*data_file3;
 
 	maleT = malloc(sizeof(int *) * LH);
 	maleP = malloc(sizeof(int *) * LH);
@@ -59,7 +61,8 @@ int main(void)
 	}
 
 	init_genrand(0);
-	data_file1="env_female_cost.dat";
+	data_file1=malloc(100);
+	sprintf(data_file1, "env_female_cost_%f.dat", K);
 
 	for (k=1; k<=1; k++)
 	{
@@ -67,7 +70,12 @@ int main(void)
 		for (k2=1; k2<=9; k2++)
 		{
 			initP2 = 0.1*k2;
-
+			//新しく挿入
+			if(initP2==0.1){
+				tend=80000;
+			}else{
+				tend=40000;
+			}
 			for (i=0; i<LH; i++) {
 				for (j=0; j<LV; j++) {
 					rnd = genrand_real2();
@@ -105,7 +113,8 @@ int main(void)
 			while (t<tend)
 			{
 				data1=fopen(data_file1,"a");
-                fprintf(data1,"%f\t%f\n",(double)numMT2/(double)(LH*LV), (double)numMP2/(double)(LH*LV));
+				if(t%10==0)
+                fprintf(data1,"%d\t%f\t%f\n",t,(double)numMT2/(double)(LH*LV), (double)numMP2/(double)(LH*LV));
                 fclose(data1);
 				for (i=0; i<LH; i++)
 					for (j=0; j<LV; j++) {
@@ -280,14 +289,27 @@ int main(void)
 					}
 				}
 				t++;
-				printf("%d %f %f \n", t, (double)numMT2/(double)(LH*LV), (double)numMP2/(double)(LH*LV));
+				// printf("%d %f %f \n", t, (double)numMT2/(double)(LH*LV), (double)numMP2/(double)(LH*LV));
 //				printf("%d %f %f %f %f %f %f %f %f \n", t, (double)numMT1/(double)(LH*LV), (double)numMT2/(double)(LH*LV), (double)numFT1/(double)(LH*LV), (double)numFT2/(double)(LH*LV), (double)numMP1/(double)(LH*LV), (double)numMP2/(double)(LH*LV), (double)numFP1/(double)(LH*LV), (double)numFP2/(double)(LH*LV));
 			}
 		}
 	}
+	data_file3=malloc(100);
+	sprintf(data_file3, "finalenv_cost_%f.dat",K);
+    // data_file3 = "final_env.dat";
+    gp=fopen(data_file1,"r");
+    while(fscanf(gp,"%d %lf %lf",&x,&y,&z)==3){
+         if(x==(tend-10)){
+             data3=fopen(data_file3,"a");
+             fprintf(data3,"%d\t%f\t%f\n",x,y,z);
+             fclose(data3);
+         }
+     }
+     fclose(gp);
+
 	gp=popen("gnuplot -persist","w");
     fprintf(gp,"set terminal png\n");
-    fprintf(gp,"set output 'Fig_env_kirkpatric_cost.png'\n");
+    fprintf(gp,"set output 'Fig_env_kirkpatric_cost_%f.png'\n",K);
     fprintf(gp,"set xrange [0:%f]\n",1.0);
     fprintf(gp,"set xlabel 'T2'\n");
     fprintf(gp,"set yrange [0:%f]\n",1.0);
@@ -297,9 +319,10 @@ int main(void)
     fprintf(gp,"f(x)=u*(x*(a*(1-u)-1)+1)/((1-u)*(a-1))\n");
     //fprintf(gp,"plot \'%s\' using 1:2 with lines linetype 1 title \"a= %f  S \",\'%s\' using 1:3 with lines linetype 3 title \"I \",\'%s\' using 1:4 with lines linetype 4 title \"0\"\n",data_file3,A_list[h],data_file3,data_file3);
     // fprintf(gp,"plot \'%s\' using 1:2 with points pointtype 7 lc rgb 'blue' title \"point \"\n",data_file1);
-    fprintf(gp,"plot \'%s\' using 1:2 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",f(x) with lines linetype 1 lc rgb 'red' title \"equilibria line\"\n",data_file1,K);
+    fprintf(gp,"plot \'%s\' using 2:3 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\",f(x) with lines linetype 1 lc rgb 'red' title \"equilibria line\"\n",data_file1,K,data_file3);
     // fprintf(gp,"plot f(x) with lines linetype 1 lc rgb 'red' title \"equilibria line\"\n");
     pclose(gp);
+
 	free(base_femalePdummy);
 	free(base_femaleTdummy);
 	free(base_malePdummy);
@@ -316,4 +339,6 @@ int main(void)
 	free(femaleT);
 	free(maleP);
 	free(maleT);
+	free(data_file1);
+	free(data_file3);
 }
