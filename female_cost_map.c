@@ -7,10 +7,10 @@
 
 #define LH	1000	//10000
 #define LV	1000	//10000
-#define K  0.0
+#define K  0.075
 #define u	0.3
 #define a	3.0
-#define tend	3000//4000 80000 10000
+#define tend	300//4000 80000 10000
 #define mapinitP 0.2
 #define initialP 2
 
@@ -21,14 +21,15 @@ void Map(const char *sex,const char *filename,double initP,int t){
     fprintf(gp,"set term pngcairo size 1000,1000\n");
     //  fprintf(gp,"set terminal png\n");
     if(strcmp(sex, "male") == 0){
-        if(strstr(filename, "stmap")) fprintf(gp,"set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
-        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'MapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
-        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        if(strstr(filename, "stmap")) fprintf(gp,"set output 'FCMapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'FCMapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
+        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'FCMapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
         fprintf(gp,"unset key\n");
         fprintf(gp,"set size ratio -1\n");
         fprintf(gp,"set xrange [0:%d]\n",LH-1);
         // fprintf(gp,"set xlabel 'T2'\n");
         fprintf(gp,"set yrange [0:%d]\n",LV-1);
+		fprintf(gp,"set cbrange [1:4]\n");
         fprintf(gp,"set palette defined(1 'blue',2 'green',3 'orange',4 'red')\n");
         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
         fprintf(gp,"set title 'Male map'\n");
@@ -37,14 +38,15 @@ void Map(const char *sex,const char *filename,double initP,int t){
         fprintf(gp,"plot \'%s\' using 1:2:3 with image\n",filename);
     }
     else if(strcmp(sex, "female") == 0){
-        if(strstr(filename, "stmap")) fprintf(gp,"set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
-        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'MapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
-        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        if(strstr(filename, "stmap")) fprintf(gp,"set output 'FCMapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'FCMapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
+        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'FCMapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
         fprintf(gp,"unset key\n");
         fprintf(gp,"set size ratio -1\n");
         fprintf(gp,"set xrange [0:%d]\n",LH-1);
         // fprintf(gp,"set xlabel 'T2'\n");
         fprintf(gp,"set yrange [0:%d]\n",LV-1);
+		fprintf(gp,"set cbrange [1:4]\n");
         fprintf(gp,"set palette defined(1 'blue',2 'green',3 'orange',4 'red')\n");
         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
         fprintf(gp,"set title 'Female map'\n");
@@ -111,13 +113,13 @@ int main(void)
 	
 
     snapshot_file1=malloc(100);
-    sprintf(snapshot_file1, "efcs_stmap_%f_initP_%g.dat", K,mapinitP);
+    sprintf(snapshot_file1, "femalecost_stmap_%f_initP_%g.dat", K,mapinitP);
 
     snapshot_file2=malloc(100);
     // sprintf(snapshot2, "efcs_intmap_%f.dat", K);
 
     snapshot_file3=malloc(100);
-    sprintf(snapshot_file3, "efcs_finmap_%f_initP_%g.dat", K,mapinitP);
+    sprintf(snapshot_file3, "femalecost_finmap_%f_initP_%g.dat", K,mapinitP);
 
     
     
@@ -190,154 +192,82 @@ int main(void)
 			while (t<tend)
 			{
 				
+				sum1 = sum2 = sum3 = sum4 = 0.0;
+				for (i=0; i<LH; i++)
+					for (j=0; j<LV; j++)
+					{
+						if (maleT[i][j]==1 && maleP[i][j]==1) sum1 += 1.0;
+						else if (maleT[i][j]==1 && maleP[i][j]==2) sum2 += 1.0;
+						else if (maleT[i][j]==2 && maleP[i][j]==1) sum3 += a;
+						else if (maleT[i][j]==2 && maleP[i][j]==2) sum4 += a;
+					}
 				for (i=0; i<LH; i++)
 					for (j=0; j<LV; j++) {
 						if (femaleP[i][j]==1)
 						{
-							sum1 = sum2 = sum3 = sum4 = 0.0;
-							i2 = (i-1+LH)%LH; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += 1.0;
-							i2 = (i+1+LH)%LH; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += 1.0;
-							i2 = i; j2 = (j-1+LV)%LV;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += 1.0;
-							i2 = i; j2 = (j+1+LV)%LV;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += 1.0;
+							do
+							{
+								maleI = (int)(LH*genrand_real2());
+								maleJ = (int)(LH*genrand_real2());
+								if (maleT[maleI][maleJ]==1) rnd = 1.0;
+								else rnd = genrand_real2();
+							} while (rnd<u);
 
-                            //新たに挿入
-                            i2 = i; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += 1.0;
+                            maleT0 = maleT[maleI][maleJ];
+							maleP0 = maleP[maleI][maleJ];
+                            //メスのコスト
+                            do
+							{
+								femaleI = (int)(LV*genrand_real2());
+								femaleJ = (int)(LV*genrand_real2());
+								if (femaleP[femaleI][femaleJ]==1) rnd = 1.0;
+								else rnd = genrand_real2();
+							} while (rnd<K);
+
+                            femaleT0 = femaleT[femaleI][femaleJ];
+							femaleP0 = femaleP[femaleI][femaleJ];
 						}
 						else
 						{
-							sum1 = sum2 = sum3 = sum4 = 0.0;
-							i2 = (i-1+LH)%LH; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += a;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += a;
-							i2 = (i+1+LH)%LH; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += a;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += a;
-							i2 = i; j2 = (j-1+LV)%LV;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += a;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += a;
-							i2 = i; j2 = (j+1+LV)%LV;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += a;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += a;
-                            //新たに挿入
-                            i2 = i; j2 = j;
-							if (maleT[i2][j2]==1 && maleP[i2][j2]==1) sum1 += 1.0;
-							else if (maleT[i2][j2]==1 && maleP[i2][j2]==2) sum2 += 1.0;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==1) sum3 += a;
-							else if (maleT[i2][j2]==2 && maleP[i2][j2]==2) sum4 += a;
+							do
+							{
+								rnd = genrand_real2();
+								if (rnd < sum1/(sum1+sum2+sum3+sum4))
+								{
+									maleT0 = 1;
+									maleP0 = 1;
+								}
+								else if (rnd < (sum1+sum2)/(sum1+sum2+sum3+sum4))
+								{
+									maleT0 = 1;
+									maleP0 = 2;
+								}
+								else if (rnd < (sum1+sum2+sum3)/(sum1+sum2+sum3+sum4))
+								{
+									maleT0 = 2;
+									maleP0 = 1;
+								}
+								else
+								{
+									maleT0 = 2;
+									maleP0 = 2;
+								}
+								if (maleT0==1) rnd2 = 1.0;
+								else rnd2 = genrand_real2();
+							} while (rnd2<u);
+                            //メスのコスト
+                            do
+							{
+								femaleI = (int)(LV*genrand_real2());
+								femaleJ = (int)(LV*genrand_real2());
+								if (femaleP[femaleI][femaleJ]==1) rnd = 1.0;
+								else rnd = genrand_real2();
+							} while (rnd<K);
+
+                            femaleT0 = femaleT[femaleI][femaleJ];
+							femaleP0 = femaleP[femaleI][femaleJ];
+
 						}
-
-						do
-						{
-							rnd = genrand_real2();
-							if (rnd < sum1/(sum1+sum2+sum3+sum4))
-							{
-								maleT0 = 1;
-								maleP0 = 1;
-							}
-							else if (rnd < (sum1+sum2)/(sum1+sum2+sum3+sum4))
-							{
-								maleT0 = 1;
-								maleP0 = 2;
-							}
-							else if (rnd < (sum1+sum2+sum3)/(sum1+sum2+sum3+sum4))
-							{
-								maleT0 = 2;
-								maleP0 = 1;
-							}
-							else
-							{
-								maleT0 = 2;
-								maleP0 = 2;
-							}
-							if (maleT0==1) rnd2 = 1.0;
-							else rnd2 = genrand_real2();
-						} while (rnd2<u);
-						//メスのコスト
-                        sum1 = sum2 = sum3 = sum4 = 0.0;
-						i2 = (i-1+LH)%LH; j2 = j;
-						if (femaleT[i2][j2]==1 && femaleP[i2][j2]==1) sum1 += 1.0;
-						else if (femaleT[i2][j2]==1 && femaleP[i2][j2]==2) sum2 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==1) sum3 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==2) sum4 += 1.0;
-						i2 = (i+1+LH)%LH; j2 = j;
-						if (femaleT[i2][j2]==1 && femaleP[i2][j2]==1) sum1 += 1.0;
-						else if (femaleT[i2][j2]==1 && femaleP[i2][j2]==2) sum2 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==1) sum3 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==2) sum4 += 1.0;
-						i2 = i; j2 = (j-1+LV)%LV;
-						if (femaleT[i2][j2]==1 && femaleP[i2][j2]==1) sum1 += 1.0;
-						else if (femaleT[i2][j2]==1 && femaleP[i2][j2]==2) sum2 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==1) sum3 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==2) sum4 += 1.0;
-						i2 = i; j2 = (j+1+LV)%LV;
-						if (femaleT[i2][j2]==1 && femaleP[i2][j2]==1) sum1 += 1.0;
-						else if (femaleT[i2][j2]==1 && femaleP[i2][j2]==2) sum2 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==1) sum3 += 1.0;
-						else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==2) sum4 += 1.0;
-                        //新たに挿入
-                            i2 = i; j2 = j;
-							if (femaleT[i2][j2]==1 && femaleP[i2][j2]==1) sum1 += 1.0;
-							else if (femaleT[i2][j2]==1 && femaleP[i2][j2]==2) sum2 += 1.0;
-							else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==1) sum3 += 1.0;
-							else if (femaleT[i2][j2]==2 && femaleP[i2][j2]==2) sum4 += 1.0;    
-						
-						do
-						{
-							rnd = genrand_real2();
-							if (rnd < sum1/(sum1+sum2+sum3+sum4))
-							{
-								femaleT0 = 1;
-								femaleP0 = 1;
-							}
-							else if (rnd < (sum1+sum2)/(sum1+sum2+sum3+sum4))
-							{
-								femaleT0 = 1;
-								femaleP0 = 2;
-							}
-							else if (rnd < (sum1+sum2+sum3)/(sum1+sum2+sum3+sum4))
-							{
-								femaleT0 = 2;
-								femaleP0 = 1;
-							}
-							else
-							{
-								femaleT0 = 2;
-								femaleP0 = 2;
-							}
-							if (femaleP0==1) rnd2 = 1.0;
-							else rnd2 = genrand_real2();	
-							} while (rnd2<K);
-
-                            
-
 						rnd = genrand_real2();
 						if (rnd < 0.5)
 						{
@@ -384,8 +314,8 @@ int main(void)
 				t++;
 
                 //途中の図
-                if(t%10==0&& t< 200 && initP2==mapinitP){//t<tend
-                    sprintf(snapshot_file2, "efcs_intmap_t_%d_cost_%f_initP_%g.dat", t,K,mapinitP);
+                if(t%10==0&& t< tend && initP2==mapinitP){
+                    sprintf(snapshot_file2, "femalecost_intmap_t_%d_cost_%f_initP_%g.dat", t,K,mapinitP);
                     snapshot2=fopen(snapshot_file2,"w");
                     mgenotype=fgenotype= 0;
                     for (i=0; i<LH; i++) {
