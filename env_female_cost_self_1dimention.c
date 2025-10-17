@@ -5,12 +5,12 @@
 #include <string.h>
 #include "MT.h"
 
-#define LH 100	// 10000
+#define LH 1000 // 10000
 #define LV 1000 // 10000
-#define K 0.08
+#define K 0.125
 #define u 0.3
 #define a 3.0
-#define tend 300 // 80000
+#define tend 2000 // 80000
 #define mapinitP 0.5
 #define initialP 5
 #define initialT 5
@@ -26,7 +26,7 @@ void Map(const char *sex, const char *filename, double initP) // int t, int h, i
 		if (strstr(filename, "stmap"))
 			fprintf(gp, "set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "intmap"))
-			fprintf(gp, "set output 'OneInt_T1P1vsT2P2_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
+			fprintf(gp, "set output 'onedresult/OneInt_T1P1vsT2P1_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "finmap"))
 			fprintf(gp, "set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		fprintf(gp, "unset key\n");
@@ -47,7 +47,7 @@ void Map(const char *sex, const char *filename, double initP) // int t, int h, i
 		if (strstr(filename, "stmap"))
 			fprintf(gp, "set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "intmap"))
-			fprintf(gp, "set output 'OneInt_T1P1vsT2P2_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
+			fprintf(gp, "set output 'onedresult/OneInt_T1P1vsT2P1_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "finmap"))
 			fprintf(gp, "set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		fprintf(gp, "unset key\n");
@@ -122,7 +122,8 @@ int main(void)
 	data_file1 = malloc(100);
 	sprintf(data_file1, "Onedimention_%f.dat", K);
 	snapshot_file2 = malloc(100);
-	data_file2 = "flow.dat";
+	data_file2 = malloc(100);
+	sprintf(data_file2, "flow_%f.dat", K);
 
 	for (k = initialT; k <= initialT; k++)
 	{
@@ -163,7 +164,7 @@ int main(void)
 				// if (rnd < initP2)
 				// 	maleP[i] = 2;
 				// else
-				//  	maleP[i] = 1;
+				// 	maleP[i] = 1;
 				// femaleT[i] = 2;
 				// rnd = genrand_real2();
 				// if (rnd < initP2)
@@ -172,42 +173,42 @@ int main(void)
 				// 	femaleP[i] = 1;
 
 				// T1P1vsT2P1
-				//  rnd = genrand_real2();
-				//  if (rnd < initT2)
-				//  	maleT[i] = 2;
-				//  else
-				//  	maleT[i] = 1;
-				//  maleP[i] = 2;
-				//  rnd = genrand_real2();
-				//  if (rnd < initT2)
-				//  	femaleT[i] = 2;
-				//  else
-				//  	femaleT[i] = 1;
-				//  femaleP[i] = 2;
-
-				// T1P1vaT2P2
 				rnd = genrand_real2();
 				if (rnd < initT2)
-				{
-					maleT[i] = 1;
-					maleP[i] = 1;
-				}
-				else
-				{
 					maleT[i] = 2;
-					maleP[i] = 2;
-				}
-				rnd = genrand_real2();
-				if (rnd < initP2)
-				{
-					femaleT[i] = 1;
-					femaleP[i] = 1;
-				}
 				else
-				{
+					maleT[i] = 1;
+				maleP[i] = 1;
+				rnd = genrand_real2();
+				if (rnd < initT2)
 					femaleT[i] = 2;
-					femaleP[i] = 2;
-				}
+				else
+					femaleT[i] = 1;
+				femaleP[i] = 1;
+
+				// T1P1vaT2P2
+				// rnd = genrand_real2();
+				// if (rnd < initT2)
+				// {
+				// 	maleT[i] = 1;
+				// 	maleP[i] = 1;
+				// }
+				// else
+				// {
+				// 	maleT[i] = 2;
+				// 	maleP[i] = 2;
+				// }
+				// rnd = genrand_real2();
+				// if (rnd < initP2)
+				// {
+				// 	femaleT[i] = 1;
+				// 	femaleP[i] = 1;
+				// }
+				// else
+				// {
+				// 	femaleT[i] = 2;
+				// 	femaleP[i] = 2;
+				// }
 			}
 
 			numMT1 = numMT2 = numFT1 = numFT2 = numMP1 = numMP2 = numFP1 = numFP2 = 0;
@@ -518,7 +519,7 @@ int main(void)
 
 	gp = popen("gnuplot -persist", "w");
 	fprintf(gp, "set terminal png\n");
-	fprintf(gp, "set output 'OnedimentionT2P2_%f.png'\n", K);
+	fprintf(gp, "set output 'onedresult/OnedimentionT2P2_%f.png'\n", K);
 	fprintf(gp, "set xrange [0:%f]\n", 1.0);
 	fprintf(gp, "set xlabel 'T2'\n");
 	fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -541,6 +542,7 @@ int main(void)
 	free(maleP);
 	free(maleT);
 	free(data_file1);
+	free(data_file2);
 	free(data_file3);
 	free(snapshot_file2);
 }
