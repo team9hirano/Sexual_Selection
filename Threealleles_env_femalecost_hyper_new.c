@@ -9,11 +9,11 @@
 #define LV 1000 // 10000
 // #define K 0.075 //P3メスのコスト
 // #define V 0.074 //P2メスのコスト(0<V<K)
-#define u 0.3   //T3オスのコスト
+#define u 0.0   //T3オスのコスト0.3
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 1000 // 4000 80000 10000
+#define tend 100 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 3
@@ -94,9 +94,9 @@ void calc_male_sum(double *sum, int i,int j,int **maleT,int **maleP,int female,d
         t=maleT[i2][j2];
         p=maleP[i2][j2];
         w=1.0;
-        if(t==2&&female==2)w=a1;
-        else if(t==3&&female==3)w=a2;
-
+        if(female==2&&t==2)w=a1;
+        else if(female==3&&t==3)w=a2;
+        if(t==0)printf("T=0");
         id=3*(t-1)+p-1;
         sum[id]+=w;
 
@@ -113,6 +113,7 @@ void calc_female_sum(double *sum, int i,int j,int **femaleT,int **femaleP){
         j2=(j+dj[n]+LV)%LV;
         t=femaleT[i2][j2];
         p=femaleP[i2][j2];
+        if(t==0)printf("T=0");
         id=3*(t-1)+p-1;
         sum[id]+=1.0;
 
@@ -127,6 +128,7 @@ void genotype(double *sum,int *sexT0,int *sexP0){
     for(n=0;n<9;n++)total+=sum[n];
     if(total==0.0){
         *sexT0=1;*sexP0=1;
+        printf("fault");
         return;
     }
     for(n=0;n<9;n++){
@@ -152,7 +154,7 @@ int main(void)
     int **femaleTdummy, *base_femaleTdummy;
     int **femalePdummy, *base_femalePdummy;
     double initT2, initP2, initT3, initP3;
-    int k, k2, i, j, i2, j2, t, ok, x1, x2,a,b;
+    int k, k2, i, j, i2, j2, t, ok, x1, x2,a,b,n;
     int maleI, maleJ, femaleI, femaleJ;
     int numMT1, numMT2, numMT3, numMP1, numMP2, numMP3;
     int numFT1, numFT2, numFT3, numFP1, numFP2, numFP3;
@@ -167,17 +169,18 @@ int main(void)
     char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6,*data_file7;
     char *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
 
-    for(iK=2;iK<=3;iK++){
-        K=(double)(iK*2-1)*0.1;
-        for(iV=1;iV<=3;iV++){
+    for(iK=1;iK<=1;iK++){
+        K=(double)(iK*2-1)*0.00;
+        for(iV=1;iV<=1;iV++){
             V=(double)(iV*2-1)*K/6.0;
-            for(il=2;il<=2;il++){
-                l=(double)(il*2-1)*u/6.0;
-                for(ia1=3;ia1<=3;ia1++){
+            for(il=1;il<=1;il++){
+                // l=(double)(il*2-1)*u/6.0;
+                l=0.0;
+                for(ia1=1;ia1<=1;ia1++){
                     // if(ia1==3)continue;
                     // else a1=(double)ia1;
                     a1=(double)ia1;
-                    for(ia2=3;ia2<=3;ia2++){
+                    for(ia2=1;ia2<=1;ia2++){
                         a2=(double)ia2;
     printf("K V l a2:%f %f %f %f\n",K,V,l,a2);
     maleT = malloc(sizeof(int *) * LH);
@@ -222,21 +225,21 @@ int main(void)
 
     data_file1 = malloc(100);
     sprintf(data_file1, "Three_env_T3P3_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
-    data1 = fopen(data_file1, "a");
+    
 
     data_file2 = malloc(100);
     sprintf(data_file2, "Three_env_T3P3_flow_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
 
     data_file4 = malloc(100);
     sprintf(data_file4, "Three_env_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
-    data4 = fopen(data_file4, "a");
+    
 
     data_file5 = malloc(100);
     sprintf(data_file5, "Three_env_T2P2_flow_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
 
     data_file7 = malloc(100);
     sprintf(data_file7, "Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
-    data7=fopen(data_file7,"a");
+    
 
     for (k = 1; k <= 1; k++)
     {
@@ -244,6 +247,10 @@ int main(void)
         initT3 = (1.0 - initT2) / 2;
         for (k2 = 1; k2 <= 9; k2++) // k2=1; k2<=9; k2++
         {
+            data1 = fopen(data_file1, "a");
+            data4 = fopen(data_file4, "a");
+            data7 = fopen(data_file7, "a");
+
             initP2 = 0.1 * k2;
             initP3 = (1.0 - initP2) / 2;
             for (i = 0; i < LH; i++)
@@ -396,6 +403,15 @@ int main(void)
             t = 0;
             while (t < tend)
             {
+                for(i=0;i<LH;i++){
+                    for(j=0;j<LV;j++){
+                        maleTdummy[i][j] = maleT[i][j];
+                        malePdummy[i][j] = maleP[i][j];
+                        femaleTdummy[i][j] = femaleT[i][j];
+                        femalePdummy[i][j] = femaleP[i][j];
+                    }
+                }
+
                 // data1 = fopen(data_file1, "a");
                 if (t % 10 == 0)
                     fprintf(data1, "%d\t%f\t%f\t%f\n", t, (double)numMT3 / (double)(LH * LV), (double)numMP3 / (double)(LH * LV),initP2);
@@ -411,10 +427,13 @@ int main(void)
                     for (j = 0; j < LV; j++)
                     {
                         calc_male_sum(sum,i,j,maleT,maleP,femaleP[i][j],a1,a2);
+                        // for(n=0;n<9;n++){printf("sum[%d]:%f",n,sum[n]);}
+                        // printf("calc_male_sum OK");
                         //メス遺伝のための重みづけ
                         // メスのコスト
                         
                         calc_female_sum(gsum,i,j,femaleT,femaleP);
+                        // printf("calc_female_sum OK");
 
                         rnd4 = genrand_real2();
                         //オス遺伝
@@ -427,9 +446,10 @@ int main(void)
                                     rnd2 = genrand_real2();
                                     rnd3 = genrand_real2();
                                     genotype(sum,&maleT0,&maleP0);
+                                    // printf("genotype OK");
                                     if (maleT0==1) break;
-                                    else if(maleT0==2&&rnd2<l)continue;
-                                    else if(maleT0==3&&rnd3<u)continue;
+                                    if(maleT0==2&&rnd2<l)continue;
+                                    if(maleT0==3&&rnd3<u)continue;
                                     break;
                                 } while (1);
                                 maleTdummy[i][j] = maleT0;
@@ -441,11 +461,11 @@ int main(void)
                                     rnd2 = genrand_real2();
                                     rnd3 = genrand_real2();
                                     genotype(sum,&maleT0,&maleP0);
-
-                                    if (maleT0 == 1)break;
-                                    else if (maleT0 == 2&&rnd2 < V)continue;
-                                    else if (maleT0 == 3&&rnd3 < K)continue;
-                                        
+                                    // printf("genotype OK");
+                                    if (maleP0 == 1)break;
+                                    if (maleP0 == 2&&rnd2 < V)continue;
+                                    if (maleP0 == 3&&rnd3 < K)continue;
+                                    break;  
 
                                 } while (1);
 
@@ -470,10 +490,10 @@ int main(void)
                                     rnd3 = genrand_real2();
                                     
                                     genotype(gsum,&femaleT0,&femaleP0);
-                                    
-                                    if (femaleP0==1)break;
-                                    else if(femaleP0==2 && rnd2<l)continue;
-                                    else if(femaleP0==3 && rnd3<u)continue;
+                                    // printf("genotype OK");
+                                    if (femaleT0==1)break;
+                                    if(femaleT0==2 && rnd2<l)continue;
+                                    if(femaleT0==3 && rnd3<u)continue;
                                     break;
                                 } while (1);
                                 }
@@ -492,10 +512,10 @@ int main(void)
                                     rnd3 = genrand_real2();
 
                                     genotype(gsum,&femaleT0,&femaleP0);
-
+                                    // printf("genotype OK");
                                     if (femaleP0 == 1)break;
-                                    else if (femaleP0 == 2&&rnd2 < V )continue;
-                                    else if (femaleP0 == 3&&rnd3 < K)continue;
+                                    if (femaleP0 == 2&&rnd2 < V )continue;
+                                    if (femaleP0 == 3&&rnd3 < K)continue;
                                     break;
                                 } while (1);
                                 }
@@ -735,11 +755,12 @@ int main(void)
             //     }
             //     fclose(snapshot3);
             // }
+        fclose(data1);
+        fclose(data4);
+        fclose(data7);
         }
     }
-    fclose(data1);
-    fclose(data4);
-    fclose(data7);
+    
     printf("Ok\n");
     //T3P3図
     data_file3 = malloc(100);
@@ -836,7 +857,7 @@ int main(void)
         initP2=(double)0.1*i;
         gp = popen("gnuplot -persist", "w");
         fprintf(gp, "set terminal png\n");
-        fprintf(gp, "set output 'Threealleles_hyper_genoportion/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP2_%f.png'\n", K,V,l,a1,a2,initP2);
+        fprintf(gp, "set output 'Threealleles_hyper_genoportion_new/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP2_%f.png'\n", K,V,l,a1,a2,initP2);
         fprintf(gp, "set xrange [0:%d]\n", tend);
         fprintf(gp, "set xlabel 't'\n");
         fprintf(gp, "set yrange [0:%f]\n", 1.0);
