@@ -13,7 +13,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 2000 // 4000 80000 10000
+#define tend 1000 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 3
@@ -118,6 +118,7 @@ int main(void)
                 for(ia1=1;ia1<=1;ia1++){
                     a1=3.0;
                     for(ia2=2;ia2<=4;ia2++){
+                        // a2=4.0+(double)ia2*0.1;
                         a2=(double)ia2;
     printf("K V l a2:%f %f %f %f\n",K,V,l,a2);
     maleT = malloc(sizeof(int *) * LH);
@@ -671,8 +672,8 @@ int main(void)
                         do
 							{
 								rnd = genrand_real2();
-                                rnd2=rnd3=1.0;
-                                
+                                rnd2 = genrand_real2();
+                                rnd3 = genrand_real2();
 								if (rnd < sum1/(sum1+sum2+sum3+sum4+sum5+sum6+sum7+sum8+sum9))
 								{
 									maleT0 = 1;
@@ -718,10 +719,11 @@ int main(void)
 									maleT0 = 3;
 									maleP0 = 3;
 								}
-								if (maleT0==1) rnd2 = 1.0;
-								else if(maleT0==2)rnd2 = genrand_real2();
-                                else if(maleT0==3)rnd3 = genrand_real2();
-							} while (rnd2<l || rnd3<u);
+								if (maleT0==1) break;
+								else if(maleT0==2&&rnd2<l)continue;
+                                else if(maleT0==3&&rnd3<u)continue;
+                                break;
+							} while (1);
 
 
                         // メスのコスト
@@ -797,8 +799,8 @@ int main(void)
                         do
 							{
 								rnd = genrand_real2();
-                                rnd2=rnd3=1.0;
-                                
+                                rnd2 = genrand_real2();
+                                rnd3 = genrand_real2();
 								if (rnd < sum1/(sum1+sum2+sum3+sum4+sum5+sum6+sum7+sum8+sum9))
 								{
 									femaleT0 = 1;
@@ -844,10 +846,11 @@ int main(void)
 									femaleT0 = 3;
 									femaleP0 = 3;
 								}
-								if (femaleT0==1) rnd2 = 1.0;
-								else if(femaleT0==2)rnd2 = genrand_real2();
-                                else if(femaleT0==3)rnd3 = genrand_real2();
-							} while (rnd2<V || rnd3<K);
+								if (femaleP0==1) break;
+								else if(femaleP0==2&&rnd2<V)continue;
+                                else if(femaleP0==3&&rnd3<K)continue;
+                                break;
+							} while (1);
 
                         rnd = genrand_real2();
                         if (rnd < 0.5)
@@ -1205,7 +1208,7 @@ int main(void)
         fprintf(gp, "set style line 9 lc rgb \"#000000\" lw 2\n");
         
         //fprintf(gp, "plot \'%s\' using 2:3 with points pointtype 7 lc rgb 'blue' title \"survivalrateV=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file4, V, data_file5, data_file6);
-        fprintf(gp, "plot for [j=2:10] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n",data_file7,tend*(i-1),tend*i-1);
+        fprintf(gp, "plot for [j=2:10] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n",data_file7,(i - 1) * (tend + 1),i * (tend + 1) - 1);
         pclose(gp);
     }
 
