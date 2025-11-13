@@ -173,3 +173,43 @@ double genrand_res53(void)
     return(a*67108864.0+b)*(1.0/9007199254740992.0); 
 } 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
+
+/* スレッドローカルな乱数生成器の実装を追加 */
+void init_genrand_mt(mt_state *state, unsigned long s)
+{
+    state->mt[0] = s & 0xffffffffUL;
+    for (state->mti = 1; state->mti < 624; state->mti++) {
+        state->mt[state->mti] =
+            (1812433253UL * (state->mt[state->mti-1] ^ (state->mt[state->mti-1] >> 30)) + state->mti);
+        state->mt[state->mti] &= 0xffffffffUL;
+    }
+}
+
+double genrand_real2_mt(mt_state *state)
+{
+    unsigned long y;
+    static unsigned long mag01[2] = {0x0UL, 0x9908b0dfUL};
+    int kk;
+
+    if (state->mti >= 624) {
+        for (kk = 0; kk < 624 - 397; kk++) {
+            y = (state->mt[kk] & 0x80000000UL) | (state->mt[kk+1] & 0x7fffffffUL);
+            state->mt[kk] = state->mt[kk+397] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        }
+        for (; kk < 624 - 1; kk++) {
+            y = (state->mt[kk] & 0x80000000UL) | (state->mt[kk+1] & 0x7fffffffUL);
+            state->mt[kk] = state->mt[kk+(397-624)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        }
+        y = (state->mt[623] & 0x80000000UL) | (state->mt[0] & 0x7fffffffUL);
+        state->mt[623] = state->mt[397-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        state->mti = 0;
+    }
+
+    y = state->mt[state->mti++];
+    y ^= (y >> 11);
+    y ^= (y << 7) & 0x9d2c5680UL;
+    y ^= (y << 15) & 0xefc60000UL;
+    y ^= (y >> 18);
+
+    return y * (1.0 / 4294967296.0);
+}
