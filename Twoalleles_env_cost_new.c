@@ -14,7 +14,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 #define a1 3.0   // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 10000 // 4000 80000 10000
+#define tend 5000 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 1
@@ -28,9 +28,9 @@ void Map(const char *sex,const char *filename,double K,double initP,int t){
     fprintf(gp,"set term pngcairo size 1000,1000\n");
     //  fprintf(gp,"set terminal png\n");
     if(strcmp(sex, "male") == 0){
-        if(strstr(filename, "stmap")) fprintf(gp,"set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
-        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'MapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
-        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        if(strstr(filename, "stmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapSt_%s_two_%g_initP_%g.png'\n",sex,K,initP);
+        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapInt_%s_two_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
+        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapFin_%s_two_%g_initP_%g.png'\n",sex,K,initP);
         fprintf(gp,"unset key\n");
         fprintf(gp,"set size ratio -1\n");
         fprintf(gp,"set xrange [0:%d]\n",LH-1);
@@ -44,9 +44,9 @@ void Map(const char *sex,const char *filename,double K,double initP,int t){
         fprintf(gp,"plot \'%s\' using 1:2:3 with image\n",filename);
     }
     else if(strcmp(sex, "female") == 0){
-        if(strstr(filename, "stmap")) fprintf(gp,"set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
-        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'MapInt_%s_env_cost_self_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
-        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n",sex,K,initP);
+        if(strstr(filename, "stmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapSt_%s_two_%g_initP_%g.png'\n",sex,K,initP);
+        else if(strstr(filename, "intmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapInt_%s_two_%g_initP_%g_t_%d.png'\n",sex,K,initP,t);
+        else if(strstr(filename, "finmap")) fprintf(gp,"set output 'Twoalleles_hyper_map/MapFin_%s_two_%g_initP_%g.png'\n",sex,K,initP);
         fprintf(gp,"unset key\n");
         fprintf(gp,"set size ratio -1\n");
         fprintf(gp,"set xrange [0:%d]\n",LH-1);
@@ -166,6 +166,15 @@ int main(void)
     Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9*(tend + 1));
     int geno_count = 0;
 
+    //snapshot2(空間構造の書き込み用)
+    typedef struct {
+    int i,j,mgenotype,fgenotype;
+    
+    } Recordmap;
+
+    Recordmap *recomap = malloc(sizeof(Recordmap) * LH*LV);
+    
+//"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
     int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
     mt_state *rng_states = malloc(sizeof(mt_state) * num_threads);
     if (!rng_states) { perror("malloc rng_states"); return 1; }
@@ -178,10 +187,10 @@ int main(void)
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
 
-    for(iK=0;iK<=5;iK++){
+    for(iK=0;iK<=0;iK++){
         // K=(double)(iK*2-1)*0.00;
-        K=0.19+(double)iK*0.01;
-
+        // K=0.08+(double)iK*0.01;
+        K=0.08;
         
     printf("K:%f\n",K);
     maleT = malloc(sizeof(int *) * LH);
@@ -234,6 +243,10 @@ int main(void)
     
     data_file7 = malloc(100);
     sprintf(data_file7, "Two_env_genoport_K_%f.dat", K);
+
+    snapshot_file2 = malloc(100);
+    
+                    
     
     buf_count=0;
     geno_count=0;
@@ -328,35 +341,35 @@ int main(void)
             // fclose(data7);
 
             // 初期の図
-            if (initP2 == mapinitP)
-            {
-                snapshot1 = fopen(snapshot_file1, "w");
-                mgenotype = fgenotype = 0;
-                for (i = 0; i < LH; i++)
-                {
-                    for (j = 0; j < LV; j++)
-                    {
-                        if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                            mgenotype = 1;
-                        else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                            mgenotype = 2;
-                        else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                            mgenotype = 3;
-                        else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                            mgenotype = 4;
-                        if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                            fgenotype = 1;
-                        else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                            fgenotype = 2;
-                        else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                            fgenotype = 3;
-                        else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                            fgenotype = 4;
-                        fprintf(snapshot1, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                    }
-                }
-                fclose(snapshot1);
-            }
+            // if (initP2 == mapinitP)
+            // {
+            //     snapshot1 = fopen(snapshot_file1, "w");
+            //     mgenotype = fgenotype = 0;
+            //     for (i = 0; i < LH; i++)
+            //     {
+            //         for (j = 0; j < LV; j++)
+            //         {
+            //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
+            //                 mgenotype = 1;
+            //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
+            //                 mgenotype = 2;
+            //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+            //                 mgenotype = 3;
+            //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+            //                 mgenotype = 4;
+            //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
+            //                 fgenotype = 1;
+            //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
+            //                 fgenotype = 2;
+            //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
+            //                 fgenotype = 3;
+            //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
+            //                 fgenotype = 4;
+            //             fprintf(snapshot1, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
+            //         }
+            //     }
+            //     fclose(snapshot1);
+            // }
 
 
             
@@ -542,110 +555,39 @@ int main(void)
                 
 
                 // 途中の図
-                // if (t % 100 == 0 && t < 2000 )//fabs(initP2 - mapinitP) < 1e-12&&t<2000
-                // { 
-                //     sprintf(snapshot_file2, "Three_env_intmap_t_%d_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP_%g.dat", t, K,V,l,a1,a2, initP2);
-                //     snapshot2 = fopen(snapshot_file2, "w");
-                //     mgenotype = fgenotype = 0;
-                //     for (i = 0; i < LH; i++)
-                //     {
-                //         for (j = 0; j < LV; j++)
-                //         {
-                //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                //                 mgenotype = 1;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                //                 mgenotype = 2;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 3)
-                //                 mgenotype = 3;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                //                 mgenotype = 4;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                //                 mgenotype = 5;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 3)
-                //                 mgenotype = 6;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 1)
-                //                 mgenotype = 7;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 2)
-                //                 mgenotype = 8;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 3)
-                //                 mgenotype = 9;
-                //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                //                 fgenotype = 1;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                //                 fgenotype = 2;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
-                //                 fgenotype = 3;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                //                 fgenotype = 4;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                //                 fgenotype = 5;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
-                //                 fgenotype = 6;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
-                //                 fgenotype = 7;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
-                //                 fgenotype = 8;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
-                //                 fgenotype = 9;
-                //             fprintf(snapshot2, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                //         }
-                //     }
-                //     fclose(snapshot2);
-                //     Map("male", snapshot_file2,initP2, t);
-                //     Map("female", snapshot_file2, initP2, t);
-                // }
-                // else if (t % 200 == 0 && t>2000 && t < tend )//fabs(initP2 - mapinitP) < 1e-12
-                // { 
-                //     sprintf(snapshot_file2, "Three_env_intmap_t_%d_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP_%g.dat", t, K,V,l,a1,a2 ,initP2);
-                //     snapshot2 = fopen(snapshot_file2, "w");
-                //     mgenotype = fgenotype = 0;
-                //     for (i = 0; i < LH; i++)
-                //     {
-                //         for (j = 0; j < LV; j++)
-                //         {
-                //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                //                 mgenotype = 1;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                //                 mgenotype = 2;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 3)
-                //                 mgenotype = 3;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                //                 mgenotype = 4;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                //                 mgenotype = 5;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 3)
-                //                 mgenotype = 6;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 1)
-                //                 mgenotype = 7;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 2)
-                //                 mgenotype = 8;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 3)
-                //                 mgenotype = 9;
-                //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                //                 fgenotype = 1;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                //                 fgenotype = 2;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
-                //                 fgenotype = 3;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                //                 fgenotype = 4;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                //                 fgenotype = 5;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
-                //                 fgenotype = 6;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
-                //                 fgenotype = 7;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
-                //                 fgenotype = 8;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
-                //                 fgenotype = 9;
-                //             fprintf(snapshot2, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                //         }
-                //     }
-                //     fclose(snapshot2);
-                //     Map("male", snapshot_file2,initP2, t);
-                //     Map("female", snapshot_file2, initP2, t);
-                // }
+                //途中の図
+                if(t%100==0 && fabs(initP2 - mapinitP) < 1e-12){//t<tend
+                    sprintf(snapshot_file2, "Two_intmap_t_%d_cost_%f_initP_%g.dat", t,K,mapinitP);
+                    // snapshot2=fopen(snapshot_file2,"w");
+                    mgenotype=fgenotype= 0;
+					// matgenotypecount=0;
+                    for (i=0; i<LH; i++) {
+                        for (j=0; j<LV; j++) {
+                            if (maleT[i][j] == 1 && maleP[i][j]==1 ) mgenotype=1;
+                            else if (maleT[i][j] == 1 && maleP[i][j]==2 ) mgenotype=2;
+                            else if (maleT[i][j] == 2 && maleP[i][j]==1 ) mgenotype=3;
+                            else if (maleT[i][j] == 2 && maleP[i][j]==2 ) mgenotype=4;
+                            if (femaleT[i][j] == 1 && femaleP[i][j]==1 ) fgenotype=1;
+                            else if (femaleT[i][j] == 1 && femaleP[i][j]==2 ) fgenotype=2;
+                            else if (femaleT[i][j] == 2 && femaleP[i][j]==1 ) fgenotype=3;
+                            else if (femaleT[i][j] == 2 && femaleP[i][j]==2 ) fgenotype=4;
+							// if(mgenotype==fgenotype)matgenotypecount+=1;
+                            recomap[i*LH + j].i = i;
+                            recomap[i*LH + j].j = j;
+                            recomap[i*LH + j].mgenotype = mgenotype;
+                            recomap[i*LH + j].fgenotype = fgenotype;
+                            // fprintf(snapshot2,"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype);
+                        }
+                    }
+                    snapshot2 = fopen(snapshot_file2, "w");
+                    for(n=0;n<LH*LV;n++){
+                        fprintf(snapshot2,"%d\t%d\t%d\t%d\n",recomap[n].i,recomap[n].j,recomap[n].mgenotype,recomap[n].fgenotype);
+                    }
+					// printf("オスとメスの遺伝子型一致割合：%f\n",(double)matgenotypecount/(LH*LV));
+                    fclose(snapshot2);
+					Map("male",snapshot_file2,K,mapinitP,t);
+    				Map("female",snapshot_file2,K,mapinitP,t);
+                }
             //遺伝子型の割合出力
             sum1 = sum2 = sum3 = sum4 = 0.0;
             // data7=fopen(data_file7,"a");

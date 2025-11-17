@@ -7,7 +7,7 @@
 
 #define LH 1000 // 10000
 #define LV 1000 // 10000
-#define K 0.125
+#define K 0.08
 #define u 0.3
 #define a 3.0
 #define tend 2000 // 80000
@@ -26,7 +26,7 @@ void Map(const char *sex, const char *filename, double initP) // int t, int h, i
 		if (strstr(filename, "stmap"))
 			fprintf(gp, "set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "intmap"))
-			fprintf(gp, "set output 'onedresult/OneInt_T1P1vsT2P1_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
+			fprintf(gp, "set output 'onedresult/OneInt_%s_T1P1vsT2P2_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "finmap"))
 			fprintf(gp, "set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		fprintf(gp, "unset key\n");
@@ -47,7 +47,7 @@ void Map(const char *sex, const char *filename, double initP) // int t, int h, i
 		if (strstr(filename, "stmap"))
 			fprintf(gp, "set output 'MapSt_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "intmap"))
-			fprintf(gp, "set output 'onedresult/OneInt_T1P1vsT2P1_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
+			fprintf(gp, "set output 'onedresult/OneInt_%s_T1P1vsT2P2_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		else if (strstr(filename, "finmap"))
 			fprintf(gp, "set output 'MapFin_%s_env_cost_self_%g_initP_%g.png'\n", sex, K, initP);
 		fprintf(gp, "unset key\n");
@@ -86,7 +86,7 @@ int main(void)
 	int maleI, maleJ, femaleI, femaleJ;
 	int numMT1, numMT2, numMP1, numMP2;
 	int numFT1, numFT2, numFP1, numFP2;
-	double rnd, rnd2, sum1, sum2, sum3, sum4, sum5, y1, z1, y2, z2;
+	double rnd, rnd2,rnd3,rnd4,sum1, sum2, sum3, sum4, sum5,gsum1, gsum2, gsum3, gsum4, gsum5, y1, z1, y2, z2;
 	int maleT0, maleP0, femaleT0, femaleP0, mgenotype, fgenotype;
 	FILE *gp, *data1, *data2, *data3, *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
 	char *data_file1, *data_file2, *data_file3, *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
@@ -173,42 +173,42 @@ int main(void)
 				// 	femaleP[i] = 1;
 
 				// T1P1vsT2P1
-				rnd = genrand_real2();
-				if (rnd < initT2)
-					maleT[i] = 2;
-				else
-					maleT[i] = 1;
-				maleP[i] = 1;
-				rnd = genrand_real2();
-				if (rnd < initT2)
-					femaleT[i] = 2;
-				else
-					femaleT[i] = 1;
-				femaleP[i] = 1;
-
-				// T1P1vaT2P2
 				// rnd = genrand_real2();
 				// if (rnd < initT2)
-				// {
-				// 	maleT[i] = 1;
-				// 	maleP[i] = 1;
-				// }
-				// else
-				// {
 				// 	maleT[i] = 2;
-				// 	maleP[i] = 2;
-				// }
-				// rnd = genrand_real2();
-				// if (rnd < initP2)
-				// {
-				// 	femaleT[i] = 1;
-				// 	femaleP[i] = 1;
-				// }
 				// else
-				// {
+				// 	maleT[i] = 1;
+				// maleP[i] = 1;
+				// rnd = genrand_real2();
+				// if (rnd < initT2)
 				// 	femaleT[i] = 2;
-				// 	femaleP[i] = 2;
-				// }
+				// else
+				// 	femaleT[i] = 1;
+				// femaleP[i] = 1;
+
+				// T1P1vaT2P2
+				rnd = genrand_real2();
+				if (rnd < initT2)
+				{
+					maleT[i] = 1;
+					maleP[i] = 1;
+				}
+				else
+				{
+					maleT[i] = 2;
+					maleP[i] = 2;
+				}
+				rnd = genrand_real2();
+				if (rnd < initP2)
+				{
+					femaleT[i] = 1;
+					femaleP[i] = 1;
+				}
+				else
+				{
+					femaleT[i] = 2;
+					femaleP[i] = 2;
+				}
 			}
 
 			numMT1 = numMT2 = numFT1 = numFT2 = numMP1 = numMP2 = numFP1 = numFP2 = 0;
@@ -247,7 +247,7 @@ int main(void)
 				{
 					// i = genrand_int32() % LH;
 					i = j;
-
+					//オスの周囲の遺伝子頻度
 					if (femaleP[i] == 1)
 					{
 						sum1 = sum2 = sum3 = sum4 = 0.0;
@@ -310,93 +310,195 @@ int main(void)
 						else if (maleT[i2] == 2 && maleP[i2] == 2)
 							sum4 += a;
 					}
-
-					do
-					{
-						rnd = genrand_real2();
-						if (rnd < sum1 / (sum1 + sum2 + sum3 + sum4))
-						{
-							maleT0 = 1;
-							maleP0 = 1;
-						}
-						else if (rnd < (sum1 + sum2) / (sum1 + sum2 + sum3 + sum4))
-						{
-							maleT0 = 1;
-							maleP0 = 2;
-						}
-						else if (rnd < (sum1 + sum2 + sum3) / (sum1 + sum2 + sum3 + sum4))
-						{
-							maleT0 = 2;
-							maleP0 = 1;
-						}
-						else
-						{
-							maleT0 = 2;
-							maleP0 = 2;
-						}
-						if (maleT0 == 1)
-							rnd2 = 1.0;
-						else
-							rnd2 = genrand_real2();
-					} while (rnd2 < u);
-					// メスのコスト
-					sum1 = sum2 = sum3 = sum4 = 0.0;
+					//メスの周囲の遺伝子頻度
+					gsum1 = gsum2 = gsum3 = gsum4 = 0.0;
 					i2 = (i - 1 + LH) % LH;
 					if (femaleT[i2] == 1 && femaleP[i2] == 1)
-						sum1 += 1.0;
+						gsum1 += 1.0;
 					else if (femaleT[i2] == 1 && femaleP[i2] == 2)
-						sum2 += 1.0;
+						gsum2 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 1)
-						sum3 += 1.0;
+						gsum3 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 2)
-						sum4 += 1.0;
+						gsum4 += 1.0;
 					i2 = (i + 1 + LH) % LH;
 					if (femaleT[i2] == 1 && femaleP[i2] == 1)
-						sum1 += 1.0;
+						gsum1 += 1.0;
 					else if (femaleT[i2] == 1 && femaleP[i2] == 2)
-						sum2 += 1.0;
+						gsum2 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 1)
-						sum3 += 1.0;
+						gsum3 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 2)
-						sum4 += 1.0;
+						gsum4 += 1.0;
 					i2 = i;
 					if (femaleT[i2] == 1 && femaleP[i2] == 1)
-						sum1 += 1.0;
+						gsum1 += 1.0;
 					else if (femaleT[i2] == 1 && femaleP[i2] == 2)
-						sum2 += 1.0;
+						gsum2 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 1)
-						sum3 += 1.0;
+						gsum3 += 1.0;
 					else if (femaleT[i2] == 2 && femaleP[i2] == 2)
-						sum4 += 1.0;
+						gsum4 += 1.0;
 
-					do
-					{
-						rnd = genrand_real2();
-						if (rnd < sum1 / (sum1 + sum2 + sum3 + sum4))
-						{
-							femaleT0 = 1;
-							femaleP0 = 1;
-						}
-						else if (rnd < (sum1 + sum2) / (sum1 + sum2 + sum3 + sum4))
-						{
-							femaleT0 = 1;
-							femaleP0 = 2;
-						}
-						else if (rnd < (sum1 + sum2 + sum3) / (sum1 + sum2 + sum3 + sum4))
-						{
-							femaleT0 = 2;
-							femaleP0 = 1;
-						}
-						else
-						{
-							femaleT0 = 2;
-							femaleP0 = 2;
-						}
-						if (femaleP0 == 1)
-							rnd2 = 1.0;
-						else
-							rnd2 = genrand_real2();
-					} while (rnd2 < K);
+					//オス遺伝
+					rnd4 = genrand_real2();
+                        if(rnd4<0.5){
+                            rnd3 = genrand_real2();
+                            if(rnd3<0.5){//次世代がオスの場合
+                                    
+                                    do
+									{
+										rnd = genrand_real2();
+										if (rnd < sum1 / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 1;
+											maleP0 = 1;
+										}
+										else if (rnd < (sum1 + sum2) / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 1;
+											maleP0 = 2;
+										}
+										else if (rnd < (sum1 + sum2 + sum3) / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 2;
+											maleP0 = 1;
+										}
+										else
+										{
+											maleT0 = 2;
+											maleP0 = 2;
+										}
+										if (maleT0 == 1)
+											rnd2 = 1.0;
+										else
+											rnd2 = genrand_real2();
+									} while (rnd2 < u);
+                                    // printf("genotype OK");
+                                    
+                                    
+                                
+                                maleTdummy[j] = maleT0;
+                                malePdummy[j] = maleP0;
+                            }else{
+                                 do
+									{
+										rnd = genrand_real2();
+										if (rnd < sum1 / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 1;
+											maleP0 = 1;
+										}
+										else if (rnd < (sum1 + sum2) / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 1;
+											maleP0 = 2;
+										}
+										else if (rnd < (sum1 + sum2 + sum3) / (sum1 + sum2 + sum3 + sum4))
+										{
+											maleT0 = 2;
+											maleP0 = 1;
+										}
+										else
+										{
+											maleT0 = 2;
+											maleP0 = 2;
+										}
+										if (maleP0 == 1)
+											rnd2 = 1.0;
+										else
+											rnd2 = genrand_real2();
+									} while (rnd2 < K);
+                                    
+
+                                femaleTdummy[j] = maleT0;
+                                femalePdummy[j] = maleP0;
+                                
+
+                            }
+                            
+                            
+                        }
+                        else{//メス遺伝
+                            rnd3=genrand_real2();
+                            if(rnd3<0.5){//次世代がオス
+                                femaleT0=femaleT[j];
+                                femaleP0=femaleP[j];
+                                do
+									{
+										rnd = genrand_real2();
+										if (rnd < gsum1 / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 1;
+											femaleP0 = 1;
+										}
+										else if (rnd < (gsum1 + gsum2) / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 1;
+											femaleP0 = 2;
+										}
+										else if (rnd < (gsum1 + gsum2 + gsum3) / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 2;
+											femaleP0 = 1;
+										}
+										else
+										{
+											femaleT0 = 2;
+											femaleP0 = 2;
+										}
+										if (femaleT0 == 1)
+											rnd2 = 1.0;
+										else
+											rnd2 = genrand_real2();
+									} while (rnd2 < u);
+                                
+                                
+                                maleTdummy[j] = femaleT0;
+                                malePdummy[j] = femaleP0;
+
+                            }
+                            else{//次世代がメス
+                                femaleT0=femaleT[j];
+                                femaleP0=femaleP[j];
+                                do
+									{
+										rnd = genrand_real2();
+										if (rnd < gsum1 / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 1;
+											femaleP0 = 1;
+										}
+										else if (rnd < (gsum1 + gsum2) / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 1;
+											femaleP0 = 2;
+										}
+										else if (rnd < (gsum1 + gsum2 + gsum3) / (gsum1 + gsum2 + gsum3 + gsum4))
+										{
+											femaleT0 = 2;
+											femaleP0 = 1;
+										}
+										else
+										{
+											femaleT0 = 2;
+											femaleP0 = 2;
+										}
+										if (femaleP0 == 1)
+											rnd2 = 1.0;
+										else
+											rnd2 = genrand_real2();
+									} while (rnd2 < K);
+                                
+                                
+                                femaleTdummy[j] = femaleT0;
+                                femalePdummy[j] = femaleP0;
+                            }
+                            
+
+                        }
+					
+				
 
 					rnd = genrand_real2();
 					if (rnd < 0.5)

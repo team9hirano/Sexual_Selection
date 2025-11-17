@@ -9,11 +9,11 @@
 #define LV 1000 // 10000
 // #define K 0.075 //P3メスのコスト
 // #define V 0.074 //P2メスのコスト(0<V<K)
-#define u 0.0   //T3オスのコスト0.3
+#define u 0.3   //T3オスのコスト0.3
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 100 // 4000 80000 10000
+#define tend 1000 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 3
@@ -170,21 +170,63 @@ int main(void)
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
     char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6,*data_file7;
     char *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
+    //data1(T2P2頻度図の書き込み用)
+    typedef struct {
+    int t;
+    double mt2, mp2, initP2;
+    } RecordT2P2;
 
-    for(iK=1;iK<=1;iK++){
-        K=(double)(iK*2-1)*0.00;
-        for(iV=1;iV<=1;iV++){
+    RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    int buf_count = 0;
+    //data7(遺伝子頻度の書き込み用)
+    typedef struct {
+    int t;
+    double sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9;
+    } Recordgenoport;
+
+    Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9*(tend + 1));
+    int geno_count = 0;
+
+    //snapshot2(空間構造の書き込み用)
+    typedef struct {
+    int i,j,mgenotype,fgenotype;
+    
+    } Recordmap;
+
+    Recordmap *recomap = malloc(sizeof(Recordmap) * LH*LV);
+
+    int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
+    mt_state *rng_states = malloc(sizeof(mt_state) * num_threads);
+    if (!rng_states) { perror("malloc rng_states"); return 1; }
+
+    for (int tid = 0; tid < num_threads; tid++) {
+        init_genrand_mt(&rng_states[tid], 5489UL + (unsigned long)tid * 12345UL);
+    }
+
+    omp_set_num_threads(num_threads);
+    printf("Using %d threads\n", num_threads);
+    fflush(stdout);
+
+
+    for(iK=1;iK<=3;iK++){
+        K=(double)(iK*2-1)*0.01;
+        for(iV=1;iV<=3;iV++){
             V=(double)(iV*2-1)*K/6.0;
-            for(il=1;il<=1;il++){
-                // l=(double)(il*2-1)*u/6.0;
-                l=0.0;
-                for(ia1=1;ia1<=1;ia1++){
+            for(il=1;il<=3;il++){
+                l=(double)(il*2-1)*u/6.0;
+                
+                for(ia1=2;ia1<=6;ia1++){
                     // if(ia1==3)continue;
                     // else a1=(double)ia1;
                     a1=(double)ia1;
-                    for(ia2=1;ia2<=1;ia2++){
+                    for(ia2=2;ia2<=6;ia2++){
                         a2=(double)ia2;
     printf("K V l a2:%f %f %f %f\n",K,V,l,a2);
+    RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    Recordmap *recomap = malloc(sizeof(Recordmap) * LH*LV);
+    Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9*(tend + 1));
     maleT = malloc(sizeof(int *) * LH);
     maleP = malloc(sizeof(int *) * LH);
     femaleT = malloc(sizeof(int *) * LH);
@@ -243,15 +285,18 @@ int main(void)
     sprintf(data_file7, "Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
     
 
+    buf_count=0;
+    geno_count=0;
+
     for (k = 1; k <= 1; k++)
     {
         initT2 = 0.1 * initialT;
         initT3 = (1.0 - initT2) / 2;
         for (k2 = 1; k2 <= 9; k2++) // k2=1; k2<=9; k2++
         {
-            data1 = fopen(data_file1, "a");
-            data4 = fopen(data_file4, "a");
-            data7 = fopen(data_file7, "a");
+            // data1 = fopen(data_file1, "a");
+            // data4 = fopen(data_file4, "a");
+            // data7 = fopen(data_file7, "a");
 
             initP2 = 0.1 * k2;
             initP3 = (1.0 - initP2) / 2;
@@ -346,88 +391,115 @@ int main(void)
                     else if ((maleT[i][j] == 3 && maleP[i][j] == 3)||(femaleT[i][j] == 3 && femaleP[i][j] == 3))sum9+=1;
                 }
             }
-            fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", 0,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
-            (double)sum3/(double)(LH*LV),(double)sum4/(double)(LH*LV),(double)sum5/(double)(LH*LV),(double)sum6/(double)(LH*LV),\
-            (double)sum7/(double)(LH*LV),(double)sum8/(double)(LH*LV),(double)sum9/(double)(LH*LV));
+            // fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", 0,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
+            // (double)sum3/(double)(LH*LV),(double)sum4/(double)(LH*LV),(double)sum5/(double)(LH*LV),(double)sum6/(double)(LH*LV),\
+            // (double)sum7/(double)(LH*LV),(double)sum8/(double)(LH*LV),(double)sum9/(double)(LH*LV));
             // fclose(data7);
+            genorepo[geno_count].t = 0;
+            genorepo[geno_count].sum1 = (double)sum1 / (double)(LH * LV);
+            genorepo[geno_count].sum2 = (double)sum2 / (double)(LH * LV);
+            genorepo[geno_count].sum3 = (double)sum3 / (double)(LH * LV);
+            genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
+            genorepo[geno_count].sum5 = (double)sum5 / (double)(LH * LV);
+            genorepo[geno_count].sum6 = (double)sum6 / (double)(LH * LV);
+            genorepo[geno_count].sum7 = (double)sum7 / (double)(LH * LV);
+            genorepo[geno_count].sum8 = (double)sum8 / (double)(LH * LV);
+            genorepo[geno_count].sum9 = (double)sum9 / (double)(LH * LV);
+            geno_count++;
 
             // 初期の図
-            if (initP2 == mapinitP)
-            {
-                snapshot1 = fopen(snapshot_file1, "w");
-                mgenotype = fgenotype = 0;
-                for (i = 0; i < LH; i++)
-                {
-                    for (j = 0; j < LV; j++)
-                    {
-                        if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                            mgenotype = 1;
-                        else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                            mgenotype = 2;
-                        else if (maleT[i][j] == 1 && maleP[i][j] == 3)
-                            mgenotype = 3;
-                        else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                            mgenotype = 4;
-                        else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                            mgenotype = 5;
-                        else if (maleT[i][j] == 2 && maleP[i][j] == 3)
-                            mgenotype = 6;
-                        else if (maleT[i][j] == 3 && maleP[i][j] == 1)
-                            mgenotype = 7;
-                        else if (maleT[i][j] == 3 && maleP[i][j] == 2)
-                            mgenotype = 8;
-                        else if (maleT[i][j] == 3 && maleP[i][j] == 3)
-                            mgenotype = 9;
-                        if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                            fgenotype = 1;
-                        else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                            fgenotype = 2;
-                        else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
-                            fgenotype = 3;
-                        else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                            fgenotype = 4;
-                        else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                            fgenotype = 5;
-                        else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
-                            fgenotype = 6;
-                        else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
-                            fgenotype = 7;
-                        else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
-                            fgenotype = 8;
-                        else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
-                            fgenotype = 9;
-                        fprintf(snapshot1, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                    }
-                }
-                fclose(snapshot1);
-            }
+            // if (initP2 == mapinitP)
+            // {
+            //     snapshot1 = fopen(snapshot_file1, "w");
+            //     mgenotype = fgenotype = 0;
+            //     for (i = 0; i < LH; i++)
+            //     {
+            //         for (j = 0; j < LV; j++)
+            //         {
+            //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
+            //                 mgenotype = 1;
+            //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
+            //                 mgenotype = 2;
+            //             else if (maleT[i][j] == 1 && maleP[i][j] == 3)
+            //                 mgenotype = 3;
+            //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+            //                 mgenotype = 4;
+            //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+            //                 mgenotype = 5;
+            //             else if (maleT[i][j] == 2 && maleP[i][j] == 3)
+            //                 mgenotype = 6;
+            //             else if (maleT[i][j] == 3 && maleP[i][j] == 1)
+            //                 mgenotype = 7;
+            //             else if (maleT[i][j] == 3 && maleP[i][j] == 2)
+            //                 mgenotype = 8;
+            //             else if (maleT[i][j] == 3 && maleP[i][j] == 3)
+            //                 mgenotype = 9;
+            //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
+            //                 fgenotype = 1;
+            //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
+            //                 fgenotype = 2;
+            //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
+            //                 fgenotype = 3;
+            //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
+            //                 fgenotype = 4;
+            //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
+            //                 fgenotype = 5;
+            //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
+            //                 fgenotype = 6;
+            //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
+            //                 fgenotype = 7;
+            //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
+            //                 fgenotype = 8;
+            //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
+            //                 fgenotype = 9;
+            //             fprintf(snapshot1, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
+            //         }
+            //     }
+            //     fclose(snapshot1);
+            // }
 
             t = 0;
-            while (t < tend)
+            for(t=0;t<tend;t++)
             {
-                for(i=0;i<LH;i++){
-                    for(j=0;j<LV;j++){
-                        maleTdummy[i][j] = maleT[i][j];
-                        malePdummy[i][j] = maleP[i][j];
+                if (t % 10 == 0){
+                    buffer[buf_count].t = t;
+                    buffer[buf_count].mt2 = (double)numMT2 / (double)(LH * LV);
+                    buffer[buf_count].mp2 = (double)numMP2 / (double)(LH * LV);
+                    buffer[buf_count].initP2 = initP2;
+                    buft3p3[buf_count].t = t;
+                    buft3p3[buf_count].mt2 = (double)numMT3 / (double)(LH * LV);
+                    buft3p3[buf_count].mp2 = (double)numMP3 / (double)(LH * LV);
+                    buft3p3[buf_count].initP2 = initP2;
+                    buf_count++;
+                }
+                // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
+                #pragma omp parallel for collapse(2) schedule(static) \
+                    default(none) shared(maleT, maleP, femaleT, femaleP, \
+                    maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
+                    private(i,j)
+                for (i = 0; i < LH; i++) {
+                    for (j = 0; j < LV; j++) {
+                        maleTdummy[i][j]   = maleT[i][j];
+                        malePdummy[i][j]   = maleP[i][j];
                         femaleTdummy[i][j] = femaleT[i][j];
                         femalePdummy[i][j] = femaleP[i][j];
                     }
                 }
+                // // data1 = fopen(data_file1, "a");
+                // if (t % 10 == 0)
+                //     fprintf(data1, "%d\t%f\t%f\t%f\n", t, (double)numMT3 / (double)(LH * LV), (double)numMP3 / (double)(LH * LV),initP2);
+                // // fclose(data1);
 
-                // data1 = fopen(data_file1, "a");
-                if (t % 10 == 0)
-                    fprintf(data1, "%d\t%f\t%f\t%f\n", t, (double)numMT3 / (double)(LH * LV), (double)numMP3 / (double)(LH * LV),initP2);
-                // fclose(data1);
-
-                // data4 = fopen(data_file4, "a");
-                if (t % 10 == 0)
-                    fprintf(data4, "%d\t%f\t%f\t%f\n", t, (double)numMT2 / (double)(LH * LV), (double)numMP2 / (double)(LH * LV),initP2);
-                // fclose(data4);
+                // // data4 = fopen(data_file4, "a");
+                // if (t % 10 == 0)
+                //     fprintf(data4, "%d\t%f\t%f\t%f\n", t, (double)numMT2 / (double)(LH * LV), (double)numMP2 / (double)(LH * LV),initP2);
+                // // fclose(data4);
                 
+                #pragma omp parallel for collapse(2) schedule(static) private(sum, gsum, rnd2, rnd4, rnd5, maleT0, maleP0, femaleT0, femaleP0)
                 
                 for (i = 0; i < LH; i++)
                     for (j = 0; j < LV; j++)
-                    {
+                    {   int tid = omp_get_thread_num();
                         calc_male_sum(sum,i,j,maleT,maleP,femaleP[i][j],a1,a2);
                         // for(n=0;n<9;n++){printf("sum[%d]:%f",n,sum[n]);}
                         // printf("calc_male_sum OK");
@@ -437,39 +509,30 @@ int main(void)
                         calc_female_sum(gsum,i,j,femaleT,femaleP);
                         // printf("calc_female_sum OK");
 
-                        rnd4 = genrand_real2();
+                        rnd4 = genrand_real2_mt(&rng_states[tid]);
                         //オス遺伝
                         if(rnd4<0.5){
-                            rnd5=genrand_real2();
+                            rnd5 = genrand_real2_mt(&rng_states[tid]);
                             if(rnd5<0.5){//次世代がオスの場合
-                                do
-							    {   
-                                    
-                                    rnd2 = genrand_real2();
-                                    rnd3 = genrand_real2();
+                                    rnd2 = genrand_real2_mt(&rng_states[tid]);
                                     genotype(sum,&maleT0,&maleP0);
                                     // printf("genotype OK");
-                                    if (maleT0==1) break;
-                                    if(maleT0==2&&rnd2<l)continue;
-                                    if(maleT0==3&&rnd3<u)continue;
-                                    break;
-                                } while (1);
+                                    
+                                    if(maleT0==2&&rnd2<u){
+                                        genotype(sum,&maleT0,&maleP0);
+                                    }
+                                
                                 maleTdummy[i][j] = maleT0;
                                 malePdummy[i][j] = maleP0;
                             }else{
-                                do
-                                {
-                                    
-                                    rnd2 = genrand_real2();
-                                    rnd3 = genrand_real2();
-                                    genotype(sum,&maleT0,&maleP0);
+                                 rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                genotype(sum,&maleT0,&maleP0);
                                     // printf("genotype OK");
-                                    if (maleP0 == 1)break;
-                                    if (maleP0 == 2&&rnd2 < V)continue;
-                                    if (maleP0 == 3&&rnd3 < K)continue;
-                                    break;  
-
-                                } while (1);
+                                    
+                                if (maleP0 == 2&&rnd2 < K){
+                                    genotype(sum,&maleT0,&maleP0);
+                                }
+                                    
 
                                 femaleTdummy[i][j] = maleT0;
                                 femalePdummy[i][j] = maleP0;
@@ -480,25 +543,20 @@ int main(void)
                             
                         }
                         else{//メス遺伝
-                            count=0;
-                            rnd5=genrand_real2();
+                            rnd5=genrand_real2_mt(&rng_states[tid]);
                             if(rnd5<0.5){//次世代がオス
                                 femaleT0=femaleT[i][j];
                                 femaleP0=femaleP[i][j];
                                 if(femaleT0 != 1){
-                                     do
-							    {
-                                    
-                                    rnd2 = genrand_real2();
-                                    rnd3 = genrand_real2();
-                                    if(count>0)genotype(gsum,&femaleT0,&femaleP0);
-                                    count++;
+                                    rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                    // genotype(gsum,&femaleT0,&femaleP0);
                                     // printf("genotype OK");
-                                    if (femaleT0==1)break;
-                                    if(femaleT0==2 && rnd2<l)continue;
-                                    if(femaleT0==3 && rnd3<u)continue;
-                                    break;
-                                } while (1);
+                                    
+                                    if(femaleT0==2 && rnd2<u){
+                                        genotype(gsum,&femaleT0,&femaleP0);
+                                    }
+                                    
+                                
                                 }
                                 maleTdummy[i][j] = femaleT0;
                                 malePdummy[i][j] = femaleP0;
@@ -508,20 +566,12 @@ int main(void)
                                 femaleT0=femaleT[i][j];
                                 femaleP0=femaleP[i][j];
                                 if(femaleP0!=1){
-                                    do
-                                {
+                                   rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                    // genotype(gsum,&femaleT0,&femaleP0);
                                     
-                                    rnd2 = genrand_real2();
-                                    rnd3 = genrand_real2();
-
-                                    if(count>0)genotype(gsum,&femaleT0,&femaleP0);
-                                    count++;
-                                    // printf("genotype OK");
-                                    if (femaleP0 == 1)break;
-                                    if (femaleP0 == 2&&rnd2 < V )continue;
-                                    if (femaleP0 == 3&&rnd3 < K)continue;
-                                    break;
-                                } while (1);
+                                    if (femaleP0 == 2&&rnd2 < K){
+                                        genotype(gsum,&femaleT0,&femaleP0);
+                                    }
                                 }
                                 femaleTdummy[i][j] = femaleT0;
                                 femalePdummy[i][j] = femaleP0;
@@ -541,14 +591,14 @@ int main(void)
 
                         
                     }
-                for (i = 0; i < LH; i++)
-                    for (j = 0; j < LV; j++)
-                    {
-                        maleT[i][j] = maleTdummy[i][j];
-                        maleP[i][j] = malePdummy[i][j];
-                        femaleT[i][j] = femaleTdummy[i][j];
-                        femaleP[i][j] = femalePdummy[i][j];
-                    }
+                // for (i = 0; i < LH; i++)
+                //     for (j = 0; j < LV; j++)
+                //     {
+                //         maleT[i][j] = maleTdummy[i][j];
+                //         maleP[i][j] = malePdummy[i][j];
+                //         femaleT[i][j] = femaleTdummy[i][j];
+                //         femaleP[i][j] = femalePdummy[i][j];
+                //     }
             numMT1 = numMT2 = numMT3 = numFT1 = numFT2 = numFT3 = numMP1 = numMP2 = numMP3 = numFP1 = numFP2 = numFP3 = 0;
             for (i = 0; i < LH; i++)
             {
@@ -580,7 +630,7 @@ int main(void)
                         numFP3++;
                 }
             }
-                t++;
+                
 
                 // 途中の図
                 // if (t % 100 == 0 && t < 2000 )//fabs(initP2 - mapinitP) < 1e-12&&t<2000
@@ -703,10 +753,35 @@ int main(void)
                     else if ((maleT[i][j] == 3 && maleP[i][j] == 3)||(femaleT[i][j] == 3 && femaleP[i][j] == 3))sum9+=1;
                 }
             }
-                fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", t,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
-                (double)sum3/(double)(LH*LV),(double)sum4/(double)(LH*LV),(double)sum5/(double)(LH*LV),(double)sum6/(double)(LH*LV),\
-                (double)sum7/(double)(LH*LV),(double)sum8/(double)(LH*LV),(double)sum9/(double)(LH*LV));
+                genorepo[geno_count].t = t;
+                genorepo[geno_count].sum1 = (double)sum1 / (double)(LH * LV);
+                genorepo[geno_count].sum2 = (double)sum2 / (double)(LH * LV);
+                genorepo[geno_count].sum3 = (double)sum3 / (double)(LH * LV);
+                genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
+                genorepo[geno_count].sum5 = (double)sum5 / (double)(LH * LV);
+                genorepo[geno_count].sum6 = (double)sum6 / (double)(LH * LV);
+                genorepo[geno_count].sum7 = (double)sum7 / (double)(LH * LV);
+                genorepo[geno_count].sum8 = (double)sum8 / (double)(LH * LV);
+                genorepo[geno_count].sum9 = (double)sum9 / (double)(LH * LV);
+                geno_count++;
                 // fclose(data7);
+                int **tmp;
+
+                    tmp = maleT;
+                    maleT = maleTdummy;
+                    maleTdummy = tmp;
+
+                    tmp = maleP;
+                    maleP = malePdummy;
+                    malePdummy = tmp;
+
+                    tmp = femaleT;
+                    femaleT = femaleTdummy;
+                    femaleTdummy = tmp;
+
+                    tmp = femaleP;
+                    femaleP = femalePdummy;
+                    femalePdummy = tmp;
 
             }
             // 最後の図
@@ -759,11 +834,32 @@ int main(void)
             //     }
             //     fclose(snapshot3);
             // }
-        fclose(data1);
-        fclose(data4);
-        fclose(data7);
+        // fclose(data1);
+        // fclose(data4);
+        // fclose(data7);
         }
     }
+    data1 = fopen(data_file1, "w");
+    for (int n =0; n < buf_count; n++) {
+        fprintf(data1, "%d\t%f\t%f\t%f\n",
+         buft3p3[n].t, buft3p3[n].mt2, buft3p3[n].mp2, buft3p3[n].initP2);
+    }
+    fclose(data1);
+
+    data4 = fopen(data_file4, "w");
+    for (int n =0; n < buf_count; n++) {
+        fprintf(data4, "%d\t%f\t%f\t%f\n",
+        buffer[n].t, buffer[n].mt2, buffer[n].mp2, buffer[n].initP2);
+    }
+    fclose(data4);  
+
+    data7 = fopen(data_file7, "w");
+    for (int n = 0; n < geno_count; n++) {
+        fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+        genorepo[n].t, genorepo[n].sum1, genorepo[n].sum2, genorepo[n].sum3, genorepo[n].sum4,genorepo[n].sum5,\
+         genorepo[n].sum6, genorepo[n].sum7, genorepo[n].sum8, genorepo[n].sum9);
+    }
+    fclose(data7);
     
     printf("Ok\n");
     //T3P3図
@@ -914,5 +1010,9 @@ int main(void)
     free(data_file5);
     free(data_file6);
     free(data_file7);
+    free(buffer);
+    free(buft3p3);
+    free(genorepo);
     }}}}}
+    free(rng_states);
 }
