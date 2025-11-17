@@ -12,7 +12,7 @@
 // #define V 0.074 //P2メスのコスト(0<V<K)
 #define u 0.3 // T3オスのコスト0.3
 // #define l 0.15  //T2オスのコスト(0<l<u)
-#define a1 3.0 // P2メスがT2オスを選好する倍率
+#define a1 3.0 // P2メスがT2オスを選好する倍率3.0
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
 #define tend 100 // 4000 80000 10000
 #define mapinitP 0.3
@@ -120,10 +120,11 @@ static inline void calc_female_sum(double *sum, int i, int j, int **restrict fem
     }
 }
 
-static inline void genotype(double *sum, int *sexT0, int *sexP0)
+static inline void genotype(double *sum, int *sexT0, int *sexP0, mt_state *rng_states)
 {
     int n;
-    double rnd = genrand_real2();
+    // int tid = omp_get_thread_num();
+    double rnd = genrand_real2_mt(rng_states);
     double total, acc;
     total = 0.0;
     acc = 0.0;
@@ -416,8 +417,26 @@ int main(void)
                 // }
 
                 // t = 0;
+
+                // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
+                
                 for (t = 0; t < tend; t++) // while(t<tend)
-                {
+                {   
+
+                    #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
+                                                                               maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
+    private(i, j)
+                 
+                    for (i = 0; i < LH; i++)
+                    {
+                        for (j = 0; j < LV; j++)
+                        {
+                            maleTdummy[i][j] = maleT[i][j];
+                            malePdummy[i][j] = maleP[i][j];
+                            femaleTdummy[i][j] = femaleT[i][j];
+                            femalePdummy[i][j] = femaleP[i][j];
+                        }
+                    }
 
                     // data1 = fopen(data_file1, "a");
 
@@ -438,19 +457,10 @@ int main(void)
 //     printf("OpenMP threads = %d\n", omp_get_num_threads());
 // }
 // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
-#pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
+// #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
                                                                                maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
     private(i, j)
-                    for (i = 0; i < LH; i++)
-                    {
-                        for (j = 0; j < LV; j++)
-                        {
-                            maleTdummy[i][j] = maleT[i][j];
-                            malePdummy[i][j] = maleP[i][j];
-                            femaleTdummy[i][j] = femaleT[i][j];
-                            femalePdummy[i][j] = femaleP[i][j];
-                        }
-                    }
+                    
 
 #pragma omp parallel for collapse(2) schedule(static) private(sum, gsum, rnd2, rnd4, rnd5, maleT0, maleP0, femaleT0, femaleP0)
                     // #pragma omp parallel for schedule(static)
@@ -483,7 +493,7 @@ int main(void)
                                     do
                                     {
                                         rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                        genotype(sum, &maleT0, &maleP0);
+                                        genotype(sum, &maleT0, &maleP0, &rng_states[tid]);
                                         // printf("genotype OK");
                                         if (maleT0 == 1)
                                             break;
@@ -500,7 +510,7 @@ int main(void)
                                     do
                                     {
                                         rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                        genotype(sum, &maleT0, &maleP0);
+                                        genotype(sum, &maleT0, &maleP0, &rng_states[tid]);
                                         // printf("genotype OK");
                                         if (maleP0 == 1)
                                             break;
@@ -519,58 +529,91 @@ int main(void)
                                 rnd5 = genrand_real2_mt(&rng_states[tid]);
                                 if (rnd5 < 0.5)
                                 { // 次世代がオス
-                                    femaleT0 = femaleT[i][j];
-                                    femaleP0 = femaleP[i][j];
-                                    if (femaleT0 != 1)
-                                    {
-                                        do
-                                        {
-                                            rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                            genotype(sum, &femaleT0, &femaleP0);
-                                            // printf("genotype OK");
-                                            if (femaleT0 == 1)
+                                    femaleT0=femaleT[i][j];
+                                    femaleP0=femaleP[i][j];
+                                    if(femaleT0 != 1){
+                                        rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                         if(femaleT0==2&&rnd2<u){
+                                            do
+                                            {
+                                                rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                                genotype(gsum, &femaleT0, &femaleP0, &rng_states[tid]);
+                                                // printf("genotype OK");
+                                                if (femaleT0 == 1)
+                                                    break;
+                                                if (femaleT0 == 2 && rnd2 < u)
+                                                    continue;
                                                 break;
-                                            if (femaleT0 == 2 && rnd2 < u)
-                                                continue;
-                                            break;
-                                        } while (1);
+                                            } while (1);
+                                         }
                                     }
+
+                                    // do
+                                    //     {
+                                    //         rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                    //         genotype(gsum, &femaleT0, &femaleP0, &rng_states[tid]);
+                                    //         // printf("genotype OK");
+                                    //         if (femaleT0 == 1)
+                                    //             break;
+                                    //         if (femaleT0 == 2 && rnd2 < u)
+                                    //             continue;
+                                    //         break;
+                                    //     } while (1);
                                     maleTdummy[i][j] = femaleT0;
                                     malePdummy[i][j] = femaleP0;
                                 }
                                 else
                                 { // 次世代がメス
-                                    femaleT0 = femaleT[i][j];
-                                    femaleP0 = femaleP[i][j];
-                                    if (femaleP0 != 1)
-                                    {
-                                        do
-                                        {
-                                            rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                            genotype(sum, &femaleT0, &femaleP0);
-                                            // printf("genotype OK");
-                                            if (femaleP0 == 1)
+                                    femaleT0=femaleT[i][j];
+                                    femaleP0=femaleP[i][j];
+                                    if(femaleP0 != 1){
+                                        rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                        if(femaleP0 == 2 && rnd2 < K){
+                                            do
+                                            {
+                                                rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                                genotype(gsum, &femaleT0, &femaleP0,&rng_states[tid]);
+                                                // printf("genotype OK");
+                                                if (femaleP0 == 1)
+                                                    break;
+                                                if (femaleP0 == 2 && rnd2 < K)
+                                                    continue;
                                                 break;
-                                            if (femaleP0 == 2 && rnd2 < K)
-                                                continue;
-                                            break;
-
-                                        } while (1);
+                                            } while (1);
+                                        }
                                     }
+                                    // do
+                                    //     {
+                                    //         rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                    //         genotype(gsum, &femaleT0, &femaleP0,&rng_states[tid]);
+                                    //         // printf("genotype OK");
+                                    //         if (femaleP0 == 1)
+                                    //             break;
+                                    //         if (femaleP0 == 2 && rnd2 < K)
+                                    //             continue;
+                                    //         break;
+
+                                    //     } while (1);
                                     femaleTdummy[i][j] = femaleT0;
                                     femalePdummy[i][j] = femaleP0;
                                 }
                             }
                         }
 
-                    // for (i = 0; i < LH; i++)
-                    //     for (j = 0; j < LV; j++)
-                    //     {
-                    //         maleT[i][j] = maleTdummy[i][j];
-                    //         maleP[i][j] = malePdummy[i][j];
-                    //         femaleT[i][j] = femaleTdummy[i][j];
-                    //         femaleP[i][j] = femalePdummy[i][j];
-                    //     }
+                    // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
+#pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
+                                                                               maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
+    private(i, j)
+                    for (i = 0; i < LH; i++)
+                    {
+                        for (j = 0; j < LV; j++)
+                        {
+                            maleT[i][j] = maleTdummy[i][j];
+                            maleP[i][j] = malePdummy[i][j];
+                            femaleT[i][j] = femaleTdummy[i][j];
+                            femaleP[i][j] = femalePdummy[i][j];
+                        }
+                    }
                     numMT1 = numMT2 = numFT1 = numFT2 = numMP1 = numMP2 = numFP1 = numFP2 = 0;
                     for (i = 0; i < LH; i++)
                     {
@@ -664,23 +707,23 @@ int main(void)
                     geno_count++;
                     // fclose(data7);
 
-                    int **tmp;
+                    // int **tmp;
 
-                    tmp = maleT;
-                    maleT = maleTdummy;
-                    maleTdummy = tmp;
+                    // tmp = maleT;
+                    // maleT = maleTdummy;
+                    // maleTdummy = tmp;
 
-                    tmp = maleP;
-                    maleP = malePdummy;
-                    malePdummy = tmp;
+                    // tmp = maleP;
+                    // maleP = malePdummy;
+                    // malePdummy = tmp;
 
-                    tmp = femaleT;
-                    femaleT = femaleTdummy;
-                    femaleTdummy = tmp;
+                    // tmp = femaleT;
+                    // femaleT = femaleTdummy;
+                    // femaleTdummy = tmp;
 
-                    tmp = femaleP;
-                    femaleP = femalePdummy;
-                    femalePdummy = tmp;
+                    // tmp = femaleP;
+                    // femaleP = femalePdummy;
+                    // femalePdummy = tmp;
                 }
 
                 // 最後の図

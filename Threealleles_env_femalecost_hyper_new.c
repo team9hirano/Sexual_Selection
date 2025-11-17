@@ -120,9 +120,9 @@ void calc_female_sum(double *sum, int i,int j,int **femaleT,int **femaleP){
     }
 }
 
-void genotype(double *sum,int *sexT0,int *sexP0){
+void genotype(double *sum,int *sexT0,int *sexP0, mt_state *rng_states){
     int n;
-    double rnd =genrand_real2();
+    double rnd =genrand_real2_mt(rng_states);
     double total,acc;
     total=0.0;acc=0.0;
     for(n=0;n<9;n++)total+=sum[n];
@@ -516,7 +516,7 @@ int main(void)
                             if(rnd5<0.5){
                                 do{
                                     rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                    genotype(sum,&maleT0,&maleP0);
+                                    genotype(sum,&maleT0,&maleP0,&rng_states[tid]);
                                     // printf("genotype OK");
                                     
                                     if(maleT0==1)break;
@@ -532,7 +532,7 @@ int main(void)
 
                                 do{
                                     rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                    genotype(sum,&maleT0,&maleP0);
+                                    genotype(sum,&maleT0,&maleP0,&rng_states[tid]);
                                         // printf("genotype OK");
                                         
                                     if(maleP0==1)break;
@@ -558,16 +558,19 @@ int main(void)
                                 femaleT0=femaleT[i][j];
                                 femaleP0=femaleP[i][j];
                                 if(femaleT0 != 1){
-                                    do{
-                                        rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                        genotype(sum,&femaleT0,&femaleP0);
-                                        // printf("genotype OK");
-                                        
-                                        if(femaleT0==1)break;
-                                        if(femaleT0==2&&rnd2<l)continue;
-                                        if(femaleT0==3&&rnd2<u)continue;
-                                        break;
-                                    }while(1);
+                                    rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                    if(femaleT0==2&&rnd2<l || femaleT0==3&&rnd2<u){
+                                        do{
+                                            rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                            genotype(gsum,&femaleT0,&femaleP0,&rng_states[tid]);
+                                            // printf("genotype OK");
+                                            
+                                            if(femaleT0==1)break;
+                                            if(femaleT0==2&&rnd2<l)continue;
+                                            if(femaleT0==3&&rnd2<u)continue;
+                                            break;
+                                        }while(1);
+                                    }
                                     
                                 
                                 }
@@ -579,9 +582,11 @@ int main(void)
                                 femaleT0=femaleT[i][j];
                                 femaleP0=femaleP[i][j];
                                 if(femaleP0!=1){
-                                   do{
+                                    rnd2 = genrand_real2_mt(&rng_states[tid]);
+                                   if(femaleP0==2&&rnd2<V || femaleP0==3&&rnd2<K){
+                                        do{
                                         rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                        genotype(sum,&femaleT0,&femaleP0);
+                                        genotype(gsum,&femaleT0,&femaleP0,&rng_states[tid]);
                                             // printf("genotype OK");
                                             
                                         if(femaleP0==1)break;
@@ -590,6 +595,7 @@ int main(void)
                                         break;    
 
                                     }while(1);
+                                   }
                                 }
                                 femaleTdummy[i][j] = femaleT0;
                                 femalePdummy[i][j] = femaleP0;
