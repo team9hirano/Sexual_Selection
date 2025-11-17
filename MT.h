@@ -70,3 +70,16 @@ double genrand_real3(void);
 
 /* generates a random number on [0,1) with 53-bit resolution*/
 double genrand_res53(void);
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+typedef struct {
+    unsigned long mt[624];
+    int mti;
+} mt_state;
+
+void init_genrand_mt(mt_state *state, unsigned long s);
+double genrand_real2_mt(mt_state *state);
+
