@@ -14,7 +14,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 #define a1 3.0 // P2メスがT2オスを選好する倍率3.0
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 100 // 4000 80000 10000
+#define tend 50000 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 1
@@ -232,10 +232,10 @@ int main(void)
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
 
-    for (iK = 1; iK <= 1; iK++)
+    for (iK = 4; iK <= 5; iK++)
     {
         // K=(double)(iK*2-1)*0.00;
-        K = (double)iK * 0.000;
+        K = 0.10 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
 
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
@@ -419,14 +419,14 @@ int main(void)
                 // t = 0;
 
                 // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
-                
-                for (t = 0; t < tend; t++) // while(t<tend)
-                {   
 
-                    #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
+                for (t = 0; t < tend; t++) // while(t<tend)
+                {
+
+#pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
                                                                                maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
     private(i, j)
-                 
+
                     for (i = 0; i < LH; i++)
                     {
                         for (j = 0; j < LV; j++)
@@ -449,18 +449,17 @@ int main(void)
                         buf_count++;
                     }
                     // fprintf(data1, "%d\t%f\t%f\t%f\n", t, (double)numMT2 / (double)(LH * LV), (double)numMP2 / (double)(LH * LV),initP2);
-// fclose(data1);
+                    // fclose(data1);
 
-// #pragma omp parallel
-// {
-//     #pragma omp single
-//     printf("OpenMP threads = %d\n", omp_get_num_threads());
-// }
-// --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
-// #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
+                    // #pragma omp parallel
+                    // {
+                    //     #pragma omp single
+                    //     printf("OpenMP threads = %d\n", omp_get_num_threads());
+                    // }
+                    // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
+                     // #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
                                                                                maleTdummy, malePdummy, femaleTdummy, femalePdummy) \
     private(i, j)
-                    
 
 #pragma omp parallel for collapse(2) schedule(static) private(sum, gsum, rnd2, rnd4, rnd5, maleT0, maleP0, femaleT0, femaleP0)
                     // #pragma omp parallel for schedule(static)
@@ -529,11 +528,13 @@ int main(void)
                                 rnd5 = genrand_real2_mt(&rng_states[tid]);
                                 if (rnd5 < 0.5)
                                 { // 次世代がオス
-                                    femaleT0=femaleT[i][j];
-                                    femaleP0=femaleP[i][j];
-                                    if(femaleT0 != 1){
+                                    femaleT0 = femaleT[i][j];
+                                    femaleP0 = femaleP[i][j];
+                                    if (femaleT0 != 1)
+                                    {
                                         rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                         if(femaleT0==2&&rnd2<u){
+                                        if (femaleT0 == 2 && rnd2 < u)
+                                        {
                                             do
                                             {
                                                 rnd2 = genrand_real2_mt(&rng_states[tid]);
@@ -545,7 +546,7 @@ int main(void)
                                                     continue;
                                                 break;
                                             } while (1);
-                                         }
+                                        }
                                     }
 
                                     // do
@@ -564,15 +565,17 @@ int main(void)
                                 }
                                 else
                                 { // 次世代がメス
-                                    femaleT0=femaleT[i][j];
-                                    femaleP0=femaleP[i][j];
-                                    if(femaleP0 != 1){
+                                    femaleT0 = femaleT[i][j];
+                                    femaleP0 = femaleP[i][j];
+                                    if (femaleP0 != 1)
+                                    {
                                         rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                        if(femaleP0 == 2 && rnd2 < K){
+                                        if (femaleP0 == 2 && rnd2 < K)
+                                        {
                                             do
                                             {
                                                 rnd2 = genrand_real2_mt(&rng_states[tid]);
-                                                genotype(gsum, &femaleT0, &femaleP0,&rng_states[tid]);
+                                                genotype(gsum, &femaleT0, &femaleP0, &rng_states[tid]);
                                                 // printf("genotype OK");
                                                 if (femaleP0 == 1)
                                                     break;
