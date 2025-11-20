@@ -13,74 +13,74 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 1000 // 4000 80000 10000
-#define mapinitP 0.3
+#define tend 50000 // 4000 80000 10000
+#define mapinitP 0.5
 #define initialP 3
-#define initialT 3
+#define initialT 1
 
-// void Map(const char *sex, const char *filename, double initP, int t)
-// {
-//     FILE *gp;
-//     gp = popen("gnuplot -persist", "w");
-//     fprintf(gp, "set term pngcairo size 1000,1000\n");
-//     //  fprintf(gp,"set terminal png\n");
-//     if (strcmp(sex, "male") == 0)
-//     {
-//         if (strstr(filename, "stmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapSt_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g.png'\n", sex, K,V,l,a1,a2, initP);
-//         else if (strstr(filename, "intmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapInt_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g_t_%d.png'\n", sex, K,V,l,a1,a2, initP, t);
-//         else if (strstr(filename, "finmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapFin_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g.png'\n", sex, K,V,l,a1,a2, initP);
-//         fprintf(gp, "unset key\n");
-//         fprintf(gp, "set size ratio -1\n");
-//         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
-//         // fprintf(gp,"set xlabel 'T2'\n");
-//         fprintf(gp, "set yrange [0:%d]\n", LV - 1);
-//         fprintf(gp, "set palette defined(1 \"#FFFFFF\", 2 \"#02befcff\", 3 \"#0000FF\", 4 \"#00FF00\", \
-//              5 \"#FFFF00\", 6 \"#FFA500\", 7 \"#FF0000\", 8 \"#FF69B4\", 9 \"#000000\")\n");
+void Map(const char *sex, const char *filename, double K,double V,double initP, int t)
+{
+    FILE *gp;
+    gp = popen("gnuplot -persist", "w");
+    fprintf(gp, "set term pngcairo size 1000,1000\n");
+    //  fprintf(gp,"set terminal png\n");
+    if (strcmp(sex, "male") == 0)
+    {
+        if (strstr(filename, "stmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
+        else if (strstr(filename, "intmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%d.png'\n", sex, K,V, initP, t);
+        else if (strstr(filename, "finmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
+        fprintf(gp, "unset key\n");
+        fprintf(gp, "set size ratio -1\n");
+        fprintf(gp, "set xrange [0:%d]\n", LH - 1);
+        // fprintf(gp,"set xlabel 'T2'\n");
+        fprintf(gp, "set yrange [0:%d]\n", LV - 1);
+        fprintf(gp, "set palette defined(1 \"#FFFFFF\", 2 \"#02befcff\", 3 \"#0000FF\", 4 \"#00FF00\", \
+             5 \"#FFFF00\", 6 \"#FFA500\", 7 \"#FF0000\", 8 \"#FF69B4\", 9 \"#000000\")\n");
 
-//         fprintf(gp,"set cbtics ('T1P1' 1, 'T1P2' 2, 'T1P3' 3, 'T2P1' 4, \
-//             'T2P2' 5, 'T2P3' 6, 'T3P1' 7, 'T3P2' 8, 'T3P3' 9)\n");
-//         fprintf(gp, "unset autoscale cb\n");
-//         fprintf(gp, "set cbrange [1:9]\n");
-//         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
-//         fprintf(gp, "set title 'Male map'\n");
-//         fprintf(gp, "unset xtics;unset ytics\n");
-//         // fprintf(gp,"unset yticks\n");
-//         fprintf(gp, "plot \'%s\' using 1:2:3 with image\n", filename);
-//     }
-//     else if (strcmp(sex, "female") == 0)
-//     {
-//         if (strstr(filename, "stmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapSt_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g.png'\n", sex, K,V,l,a1,a2, initP);
-//         else if (strstr(filename, "intmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapInt_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g_t_%d.png'\n", sex, K,V,l,a1,a2, initP, t);
-//         else if (strstr(filename, "finmap"))
-//             fprintf(gp, "set output 'Threealleles/ThreeMapFin_%s_env_K_%g_V_%g_l_%f_a1_%f_a2_%f_initP_%g.png'\n", sex, K,V,l,a1,a2, initP);
-//         fprintf(gp, "unset key\n");
-//         fprintf(gp, "set size ratio -1\n");
-//         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
-//         // fprintf(gp,"set xlabel 'T2'\n");
-//         fprintf(gp, "set yrange [0:%d]\n", LV - 1);
-//         fprintf(gp, "set palette defined(1 \"#FFFFFF\", 2 \"#02befcff\", 3 \"#0000FF\", 4 \"#00FF00\", \
-//              5 \"#FFFF00\", 6 \"#FFA500\", 7 \"#FF0000\", 8 \"#FF69B4\", 9 \"#000000\")\n");
+        fprintf(gp,"set cbtics ('T1P1' 1, 'T1P2' 2, 'T1P3' 3, 'T2P1' 4, \
+            'T2P2' 5, 'T2P3' 6, 'T3P1' 7, 'T3P2' 8, 'T3P3' 9)\n");
+        fprintf(gp, "unset autoscale cb\n");
+        fprintf(gp, "set cbrange [1:9]\n");
+        // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
+        fprintf(gp, "set title 'Male map'\n");
+        fprintf(gp, "unset xtics;unset ytics\n");
+        // fprintf(gp,"unset yticks\n");
+        fprintf(gp, "plot \'%s\' using 1:2:3 with image\n", filename);
+    }
+    else if (strcmp(sex, "female") == 0)
+    {
+        if (strstr(filename, "stmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
+        else if (strstr(filename, "intmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%d.png'\n", sex, K,V, initP, t);
+        else if (strstr(filename, "finmap"))
+            fprintf(gp, "set output 'a1a2eq3_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
+        fprintf(gp, "unset key\n");
+        fprintf(gp, "set size ratio -1\n");
+        fprintf(gp, "set xrange [0:%d]\n", LH - 1);
+        // fprintf(gp,"set xlabel 'T2'\n");
+        fprintf(gp, "set yrange [0:%d]\n", LV - 1);
+        fprintf(gp, "set palette defined(1 \"#FFFFFF\", 2 \"#02befcff\", 3 \"#0000FF\", 4 \"#00FF00\", \
+             5 \"#FFFF00\", 6 \"#FFA500\", 7 \"#FF0000\", 8 \"#FF69B4\", 9 \"#000000\")\n");
 
-//         fprintf(gp,"set cbtics ('T1P1' 1, 'T1P2' 2, 'T1P3' 3, 'T2P1' 4, \
-//             'T2P2' 5, 'T2P3' 6, 'T3P1' 7, 'T3P2' 8, 'T3P3' 9)\n");
-//         fprintf(gp, "unset autoscale cb\n");
-//         fprintf(gp, "set cbrange [1:9]\n");
-//         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
-//         fprintf(gp, "set title 'Male map'\n");
-//         fprintf(gp, "unset xtics;unset ytics\n");
-//         // fprintf(gp,"unset yticks\n");
-//         fprintf(gp, "plot \'%s\' using 1:2:3 with image\n", filename);
-//     }
-//     else
-//         printf("それはだめよ");
+        fprintf(gp,"set cbtics ('T1P1' 1, 'T1P2' 2, 'T1P3' 3, 'T2P1' 4, \
+            'T2P2' 5, 'T2P3' 6, 'T3P1' 7, 'T3P2' 8, 'T3P3' 9)\n");
+        fprintf(gp, "unset autoscale cb\n");
+        fprintf(gp, "set cbrange [1:9]\n");
+        // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
+        fprintf(gp, "set title 'Male map'\n");
+        fprintf(gp, "unset xtics;unset ytics\n");
+        // fprintf(gp,"unset yticks\n");
+        fprintf(gp, "plot \'%s\' using 1:2:3 with image\n", filename);
+    }
+    else
+        printf("それはだめよ");
 
-//     pclose(gp);
-// }
+    pclose(gp);
+}
 
 void calc_male_sum(double *sum, int i,int j,int **maleT,int **maleP,int female,double a1,double a2){
     int di[5]={-1,0,1,0,0};
@@ -209,18 +209,19 @@ int main(void)
     fflush(stdout);
 
 
-    for(iK=1;iK<=3;iK++){
-        K=(double)(iK*2-1)*0.01;
+    for(iK=1;iK<=5;iK++){//iK=1;iK<=3;iK++
+        // K=(double)(iK*2-1)*0.01;
+        K=(double)iK*0.1;
         for(iV=1;iV<=3;iV++){
             V=(double)(iV*2-1)*K/6.0;
-            for(il=1;il<=3;il++){
+            for(il=2;il<=2;il++){
                 l=(double)(il*2-1)*u/6.0;
                 
-                for(ia1=2;ia1<=6;ia1++){
+                for(ia1=3;ia1<=3;ia1++){
                     // if(ia1==3)continue;
                     // else a1=(double)ia1;
                     a1=(double)ia1;
-                    for(ia2=2;ia2<=6;ia2++){
+                    for(ia2=3;ia2<=3;ia2++){
                         a2=(double)ia2;
     printf("K V l a2:%f %f %f %f\n",K,V,l,a2);
     RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
@@ -283,6 +284,8 @@ int main(void)
 
     data_file7 = malloc(100);
     sprintf(data_file7, "Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
+
+    snapshot_file2 = malloc(100);
     
 
     buf_count=0;
@@ -657,110 +660,51 @@ int main(void)
                 
 
                 // 途中の図
-                // if (t % 100 == 0 && t < 2000 )//fabs(initP2 - mapinitP) < 1e-12&&t<2000
-                // { 
-                //     sprintf(snapshot_file2, "Three_env_intmap_t_%d_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP_%g.dat", t, K,V,l,a1,a2, initP2);
-                //     snapshot2 = fopen(snapshot_file2, "w");
-                //     mgenotype = fgenotype = 0;
-                //     for (i = 0; i < LH; i++)
-                //     {
-                //         for (j = 0; j < LV; j++)
-                //         {
-                //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                //                 mgenotype = 1;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                //                 mgenotype = 2;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 3)
-                //                 mgenotype = 3;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                //                 mgenotype = 4;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                //                 mgenotype = 5;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 3)
-                //                 mgenotype = 6;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 1)
-                //                 mgenotype = 7;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 2)
-                //                 mgenotype = 8;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 3)
-                //                 mgenotype = 9;
-                //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                //                 fgenotype = 1;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                //                 fgenotype = 2;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
-                //                 fgenotype = 3;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                //                 fgenotype = 4;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                //                 fgenotype = 5;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
-                //                 fgenotype = 6;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
-                //                 fgenotype = 7;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
-                //                 fgenotype = 8;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
-                //                 fgenotype = 9;
-                //             fprintf(snapshot2, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                //         }
-                //     }
-                //     fclose(snapshot2);
-                //     Map("male", snapshot_file2,initP2, t);
-                //     Map("female", snapshot_file2, initP2, t);
-                // }
-                // else if (t % 200 == 0 && t>2000 && t < tend )//fabs(initP2 - mapinitP) < 1e-12
-                // { 
-                //     sprintf(snapshot_file2, "Three_env_intmap_t_%d_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP_%g.dat", t, K,V,l,a1,a2 ,initP2);
-                //     snapshot2 = fopen(snapshot_file2, "w");
-                //     mgenotype = fgenotype = 0;
-                //     for (i = 0; i < LH; i++)
-                //     {
-                //         for (j = 0; j < LV; j++)
-                //         {
-                //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                //                 mgenotype = 1;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                //                 mgenotype = 2;
-                //             else if (maleT[i][j] == 1 && maleP[i][j] == 3)
-                //                 mgenotype = 3;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                //                 mgenotype = 4;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                //                 mgenotype = 5;
-                //             else if (maleT[i][j] == 2 && maleP[i][j] == 3)
-                //                 mgenotype = 6;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 1)
-                //                 mgenotype = 7;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 2)
-                //                 mgenotype = 8;
-                //             else if (maleT[i][j] == 3 && maleP[i][j] == 3)
-                //                 mgenotype = 9;
-                //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                //                 fgenotype = 1;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                //                 fgenotype = 2;
-                //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)
-                //                 fgenotype = 3;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                //                 fgenotype = 4;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                //                 fgenotype = 5;
-                //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)
-                //                 fgenotype = 6;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)
-                //                 fgenotype = 7;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)
-                //                 fgenotype = 8;
-                //             else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)
-                //                 fgenotype = 9;
-                //             fprintf(snapshot2, "%d\t%d\t%d\t%d\n", i, j, mgenotype, fgenotype);
-                //         }
-                //     }
-                //     fclose(snapshot2);
-                //     Map("male", snapshot_file2,initP2, t);
-                //     Map("female", snapshot_file2, initP2, t);
-                // }
+                // 途中の図
+                    if (t % 100 == 0 && fabs(initP2 - mapinitP) < 1e-12&&t<=40000&&fabs(V - K/2) < 1e-12)
+                    {
+                        sprintf(snapshot_file2, "Three_intmap_K_%f_V_%f_initP_%g_t_%d.dat", K,V, initP2,t);
+
+                        mgenotype = fgenotype = 0;
+
+                        for (i = 0; i < LH; i++)
+                        {
+                            for (j = 0; j < LV; j++)
+                            {
+                                if (maleT[i][j] == 1 && maleP[i][j] == 1)mgenotype = 1;
+                                else if (maleT[i][j] == 1 && maleP[i][j] == 2)mgenotype = 2;
+                                else if (maleT[i][j] == 1 && maleP[i][j] == 3)mgenotype = 3;
+                                else if (maleT[i][j] == 2 && maleP[i][j] == 1)mgenotype = 4;
+                                else if (maleT[i][j] == 2 && maleP[i][j] == 2)mgenotype = 5;
+                                else if (maleT[i][j] == 2 && maleP[i][j] == 3)mgenotype = 6;
+                                else if (maleT[i][j] == 3 && maleP[i][j] == 1)mgenotype = 7;
+                                else if (maleT[i][j] == 3 && maleP[i][j] == 2)mgenotype = 8;
+                                else if (maleT[i][j] == 3 && maleP[i][j] == 3)mgenotype = 9;
+                                if (femaleT[i][j] == 1 && femaleP[i][j] == 1)fgenotype = 1;
+                                else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)fgenotype = 2;
+                                else if (femaleT[i][j] == 1 && femaleP[i][j] == 3)fgenotype = 3;
+                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)fgenotype = 4;
+                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)fgenotype = 5;
+                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 3)fgenotype = 6;
+                                else if (femaleT[i][j] == 3 && femaleP[i][j] == 1)fgenotype = 7;
+                                else if (femaleT[i][j] == 3 && femaleP[i][j] == 2)fgenotype = 8;
+                                else if (femaleT[i][j] == 3 && femaleP[i][j] == 3)fgenotype = 9;
+                                
+                                recomap[i * LH + j].i = i;
+                                recomap[i * LH + j].j = j;
+                                recomap[i * LH + j].mgenotype = mgenotype;
+                                recomap[i * LH + j].fgenotype = fgenotype;
+                            }
+                        }
+                        snapshot2 = fopen(snapshot_file2, "w");
+                        for (n = 0; n < LH * LV; n++)
+                        {
+                            fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
+                        }
+                        fclose(snapshot2);
+                        Map("male", snapshot_file2, K,V, mapinitP, t);
+                        Map("female", snapshot_file2, K,V, mapinitP, t);
+                    }
             //遺伝子型の割合出力
             sum1 = sum2 = sum3 = sum4 =sum5 = sum6= sum7 = sum8 =sum9= 0.0;
             // data7=fopen(data_file7,"a");
@@ -891,15 +835,15 @@ int main(void)
     sprintf(data_file3, "Three_env_final_T3P3_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
     // data_file3 = "final_env.dat";
     gp = fopen(data_file1, "r");
+    data3 = fopen(data_file3, "w");
     while (fscanf(gp, "%d %lf %lf %lf", &x1, &y1, &z1,&init) == 4)
     {
         if (x1 == (tend - 10))
         {
-            data3 = fopen(data_file3, "a");
             fprintf(data3, "%d\t%f\t%f\n", x1, y1, z1);
-            fclose(data3);
         }
     }
+    fclose(data3);
     fclose(gp);
 
     data2 = fopen(data_file2, "w");
@@ -924,15 +868,15 @@ int main(void)
     sprintf(data_file6, "Three_env_final_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
     // data_file3 = "final_env.dat";
     gp = fopen(data_file4, "r");
+    data6 = fopen(data_file6, "w");
     while (fscanf(gp, "%d %lf %lf %lf", &x1, &y1, &z1,&init) == 4)
     {
         if (x1 == (tend - 10))
         {
-            data6 = fopen(data_file6, "a");
             fprintf(data6, "%d\t%f\t%f\n",x1, y1, z1);
-            fclose(data6);
         }
     }
+    fclose(data6);
     fclose(gp);
 
     data5 = fopen(data_file5, "w");
@@ -955,7 +899,7 @@ int main(void)
 
     gp = popen("gnuplot -persist", "w");
     fprintf(gp, "set terminal png\n");
-    fprintf(gp, "set output 'Threealleles_hyper_new/Three_env_T3P3_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
+    fprintf(gp, "set output 'a1a2eq3/Three_env_T3P3_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
     fprintf(gp, "set xrange [0:%f]\n", 1.0);
     fprintf(gp, "set xlabel 'T3'\n");
     fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -967,7 +911,7 @@ int main(void)
 
     gp = popen("gnuplot -persist", "w");
     fprintf(gp, "set terminal png\n");
-    fprintf(gp, "set output 'Threealleles_hyper_new/Three_env_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
+    fprintf(gp, "set output 'a1a2eq3/Three_env_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
     fprintf(gp, "set xrange [0:%f]\n", 1.0);
     fprintf(gp, "set xlabel 'T2'\n");
     fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -981,7 +925,7 @@ int main(void)
         initP2=(double)0.1*i;
         gp = popen("gnuplot -persist", "w");
         fprintf(gp, "set terminal png\n");
-        fprintf(gp, "set output 'Threealleles_hyper_genoportion_new/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP2_%f.png'\n", K,V,l,a1,a2,initP2);
+        fprintf(gp, "set output 'genopo_a1a2eq3/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP2_%f.png'\n", K,V,l,a1,a2,initP2);
         fprintf(gp, "set xrange [0:%d]\n", tend);
         fprintf(gp, "set xlabel 't'\n");
         fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -1024,9 +968,6 @@ int main(void)
     free(femaleT);
     free(maleP);
     free(maleT);
-    // free(snapshot_file1);
-    // free(snapshot_file2);
-    // free(snapshot_file3);
     free(data_file1);
     free(data_file2);
     free(data_file3);
@@ -1034,6 +975,7 @@ int main(void)
     free(data_file5);
     free(data_file6);
     free(data_file7);
+    free(snapshot_file2);
     free(buffer);
     free(buft3p3);
     free(genorepo);
