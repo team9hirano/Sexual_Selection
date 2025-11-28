@@ -13,7 +13,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 50000 // 4000 80000 10000
+#define tend 100 // 4000 80000 10000
 #define mapinitP 0.5
 #define initialP 3
 #define initialT 1
@@ -177,8 +177,8 @@ int main(void)
     double sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,initP2;
     } RecordT2P2;
 
-    RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
-    RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    // RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
+    // RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
     int buf_count = 0;
     //data7(遺伝子頻度の書き込み用)
     typedef struct {
@@ -186,7 +186,7 @@ int main(void)
     double sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9;
     } Recordgenoport;
 
-    Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9*(tend + 1));
+    // Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9*(tend + 1));
     int geno_count = 0;
 
     //snapshot2(空間構造の書き込み用)
@@ -195,7 +195,7 @@ int main(void)
     
     } Recordmap;
 
-    Recordmap *recomap = malloc(sizeof(Recordmap) * LH*LV);
+    // Recordmap *recomap = malloc(sizeof(Recordmap) * LH*LV);
 
     int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
     mt_state *rng_states = malloc(sizeof(mt_state) * num_threads);
@@ -385,15 +385,15 @@ int main(void)
             // data7=fopen(data_file7,"a");
             for(i=0;i<LH;i++){
                 for(j=0;j<LV;j++){
-                    if ((maleT[i][j] == 1 && maleP[i][j] == 1)||(femaleT[i][j] == 1 && femaleP[i][j] == 1))sum1+=1;
-                    else if ((maleT[i][j] == 1 && maleP[i][j] == 2)||(femaleT[i][j] == 1 && femaleP[i][j] == 2))sum2+=1;
-                    else if ((maleT[i][j] == 1 && maleP[i][j] == 3)||(femaleT[i][j] == 1 && femaleP[i][j] == 3))sum3+=1;
-                    else if ((maleT[i][j] == 2 && maleP[i][j] == 1)||(femaleT[i][j] == 2 && femaleP[i][j] == 1))sum4+=1;
-                    else if ((maleT[i][j] == 2 && maleP[i][j] == 2)||(femaleT[i][j] == 2 && femaleP[i][j] == 2))sum5+=1;
-                    else if ((maleT[i][j] == 2 && maleP[i][j] == 3)||(femaleT[i][j] == 2 && femaleP[i][j] == 3))sum6+=1;
-                    else if ((maleT[i][j] == 3 && maleP[i][j] == 1)||(femaleT[i][j] == 3 && femaleP[i][j] == 1))sum7+=1;
-                    else if ((maleT[i][j] == 3 && maleP[i][j] == 2)||(femaleT[i][j] == 3 && femaleP[i][j] == 2))sum8+=1;
-                    else if ((maleT[i][j] == 3 && maleP[i][j] == 3)||(femaleT[i][j] == 3 && femaleP[i][j] == 3))sum9+=1;
+                    if ((maleT[i][j] == 1 && maleP[i][j] == 1))sum1+=1;
+                    else if ((maleT[i][j] == 1 && maleP[i][j] == 2))sum2+=1;
+                    else if ((maleT[i][j] == 1 && maleP[i][j] == 3))sum3+=1;
+                    else if ((maleT[i][j] == 2 && maleP[i][j] == 1))sum4+=1;
+                    else if ((maleT[i][j] == 2 && maleP[i][j] == 2))sum5+=1;
+                    else if ((maleT[i][j] == 2 && maleP[i][j] == 3))sum6+=1;
+                    else if ((maleT[i][j] == 3 && maleP[i][j] == 1))sum7+=1;
+                    else if ((maleT[i][j] == 3 && maleP[i][j] == 2))sum8+=1;
+                    else if ((maleT[i][j] == 3 && maleP[i][j] == 3))sum9+=1;
                 }
             }
             // fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", 0,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
@@ -812,8 +812,9 @@ int main(void)
         sum9 = gsum9;
         init=init1;
     }
-    fclose(data1);
     fclose(data2);
+    fclose(data1);
+    
 
     //図示
     gp = popen("gnuplot -persist", "w");
@@ -825,7 +826,7 @@ int main(void)
     fprintf(gp, "set yrange [0:%f]\n", 1.0);
     fprintf(gp, "set ylabel 'T3P3'\n");
     
-    fprintf(gp, "plot \'%s\' using 6:9 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
+    fprintf(gp, "plot \'%s\' using 7:10 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
     
     pclose(gp);
 
@@ -862,19 +863,21 @@ int main(void)
         sum9 = gsum9;
         init=init1;
     }
-    fclose(data1);
     fclose(data2);
+    fclose(data1);
+    
 
     //図示
     gp = popen("gnuplot -persist", "w");
     fprintf(gp, "set terminal png\n");
+    fprintf(gp, "set term pngcairo size 1000,700\n");
     fprintf(gp, "set output 'Genotype_Threealleles/Three_env_T2P1_T3P3_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
     fprintf(gp, "set xrange [0:%f]\n", 1.0);
     fprintf(gp, "set xlabel 'T2P1'\n");
     fprintf(gp, "set yrange [0:%f]\n", 1.0);
     fprintf(gp, "set ylabel 'T3P3'\n");
     
-    fprintf(gp, "plot \'%s\' using 5:9 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
+    fprintf(gp, "plot \'%s\' using 6:10 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
     
     pclose(gp);
 
@@ -882,9 +885,9 @@ int main(void)
     data_file3 = malloc(100);
     sprintf(data_file3, "Three_env_final_T2P1_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
     // data_file3 = "final_env.dat";
-    gp = fopen(data_file1, "r");
+    data1 = fopen(data_file1, "r");
     data3 = fopen(data_file3, "w");
-    while (fscanf(gp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &sum1, &sum2,&sum3,&sum4,&sum5,\
+    while (fscanf(data1, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &sum1, &sum2,&sum3,&sum4,&sum5,\
         &sum6,&sum7,&sum8,&sum9,&init) == 11)
     {
         if (x1 == (tend - 10))
@@ -893,7 +896,7 @@ int main(void)
         }
     }
     fclose(data3);
-    fclose(gp);
+    fclose(data1);
 
     data2 = fopen(data_file2, "w");
     data1 = fopen(data_file1, "r");
@@ -911,19 +914,21 @@ int main(void)
         sum6 = gsum6;
         init=init1;
     }
-    fclose(data1);
     fclose(data2);
+    fclose(data1);
+    
 
     //図示
     gp = popen("gnuplot -persist", "w");
     fprintf(gp, "set terminal png\n");
+    fprintf(gp, "set term pngcairo size 1000,700\n");
     fprintf(gp, "set output 'Genotype_Threealleles/Three_env_T2P1_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.png'\n", K,V,l,a1,a2);
     fprintf(gp, "set xrange [0:%f]\n", 1.0);
     fprintf(gp, "set xlabel 'T2P1'\n");
     fprintf(gp, "set yrange [0:%f]\n", 1.0);
     fprintf(gp, "set ylabel 'T2P2'\n");
     
-    fprintf(gp, "plot \'%s\' using 5:6 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
+    fprintf(gp, "plot \'%s\' using 6:7 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
     
     pclose(gp);
 
@@ -987,6 +992,7 @@ int main(void)
     free(snapshot_file2);
     free(buffer);
     free(buft3p3);
+    free(recomap);
     free(genorepo);
     }}}}}
     free(rng_states);
