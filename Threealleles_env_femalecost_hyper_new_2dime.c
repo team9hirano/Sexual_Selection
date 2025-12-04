@@ -1,4 +1,6 @@
 /* nearest neighbor interaction */
+#define _POSIX_C_SOURCE 199309L
+#include <time.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +15,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 100 // 4000 80000 10000
+#define tend 80000 // 4000 80000 10000 80000
 #define mapinitP 0.5
 #define initialP 3
 #define initialT 1
@@ -27,11 +29,11 @@ void Map(const char *sex, const char *filename, double K,double V,double initP, 
     if (strcmp(sex, "male") == 0)
     {
         if (strstr(filename, "stmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
         else if (strstr(filename, "intmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%d.png'\n", sex, K,V, initP, t);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%06d.png'\n", sex, K,V, initP, t);
         else if (strstr(filename, "finmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
         fprintf(gp, "unset key\n");
         fprintf(gp, "set size ratio -1\n");
         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
@@ -54,11 +56,11 @@ void Map(const char *sex, const char *filename, double K,double V,double initP, 
     {
         
         if (strstr(filename, "stmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapSt_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V ,initP);
         else if (strstr(filename, "intmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%d.png'\n", sex, K,V, initP, t);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapInt_%s_env_K_%g_V_%g_initP_%g_t_%06d.png'\n", sex, K,V, initP, t);
         else if (strstr(filename, "finmap"))
-            fprintf(gp, "set output 'Vcomp_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
+            fprintf(gp, "set output 'Genotype_Threealleles_map/ThreeMapFin_%s_env_K_%g_V_%g_initP_%g.png'\n", sex, K,V, initP);
         fprintf(gp, "unset key\n");
         fprintf(gp, "set size ratio -1\n");
         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
@@ -156,7 +158,7 @@ int main(void)
     int **malePdummy, *base_malePdummy;
     int **femaleTdummy, *base_femaleTdummy;
     int **femalePdummy, *base_femalePdummy;
-    double initT2, initP2, initT3, initP3;
+    double initT2, initP2, initT3, initP3,initT2P2;
     int k, k2, i, j, i2, j2, t, ok, x1, x2,a,b,n;
     int maleI, maleJ, femaleI, femaleJ;
     int numMT1, numMT2, numMT3, numMP1, numMP2, numMP3;
@@ -171,10 +173,12 @@ int main(void)
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
     char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6,*data_file7;
     char *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     //data1(T2P2頻度図の書き込み用)
     typedef struct {
     int t;
-    double sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,initP2;
+    double sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,initT2P2;
     } RecordT2P2;
 
     // RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
@@ -210,8 +214,8 @@ int main(void)
     fflush(stdout);
 
 
-    for(iK=1;iK<=1;iK++){//iK=1;iK<=3;iK++
-        K=(double)0.10;
+    for(iK=0;iK<=6;iK++){//iK=1;iK<=3;iK++
+        K=(double)0.05*(double)iK;
         // K=0.11+(double)iK*0.001;
         for(iV=2;iV<=2;iV++){
             V=(double)(iV*2-1)*K/6.0;
@@ -295,49 +299,112 @@ int main(void)
 
     for (k = 1; k <= 1; k++)
     {
-        initT2 = 0.1 * initialT;
-        initT3 = (1.0 - initT2) / 2;
+        // initT2 = 0.1 * initialT;
+        // initT3 = (1.0 - initT2) / 2;
         for (k2 = 1; k2 <= 9; k2++) // k2=1; k2<=9; k2++
         {
             // data1 = fopen(data_file1, "a");
             // data4 = fopen(data_file4, "a");
             // data7 = fopen(data_file7, "a");
 
-            initP2 = 0.1 * k2;
-            initP3 = (1.0 - initP2) / 2;
+            // initP2 = 0.1 * k2;
+            // initP3 = (1.0 - initP2) / 2;
+            initT2P2=0.1*(double)k2;
             for (i = 0; i < LH; i++)
             {
                 for (j = 0; j < LV; j++)
                 {
-                    // 通常
-                    rnd = genrand_real2();
-                    if (rnd < initT3)
-                        maleT[i][j] = 3;
-                    else if (rnd < initT3 + initT2)
-                        maleT[i][j] = 2;
-                    else
-                        maleT[i][j] = 1;
-                    rnd = genrand_real2();
-                    if (rnd < initP3)
-                        maleP[i][j] = 3;
-                    else if (rnd < initP3 + initP2)
-                        maleP[i][j] = 2;
-                    else
-                        maleP[i][j] = 1;
-                    rnd = genrand_real2();
-                    if (rnd < initT3)
-                        femaleT[i][j] = 3;
-                    else if (rnd < initT3 + initT2)
-                        femaleT[i][j] = 2;
-                    else
-                        femaleT[i][j] = 1;
-                    rnd = genrand_real2();
-                    if (rnd < initP3)
-                        femaleP[i][j] = 3;
-                    else if (rnd < initP3 + initP2)
-                        femaleP[i][j] = 2;
-                    else
-                        femaleP[i][j] = 1;
+                    // T2P2で分ける。他はランダム
+                        rnd = genrand_real2();
+                        if (rnd < initT2P2)
+                        {
+                            maleT[i][j] = 2;
+                            maleP[i][j] = 2;
+                        }
+                        else
+                        {
+                            rnd2 = genrand_real2();
+                            if (rnd2 < 0.125)
+                            {
+                                maleT[i][j] = 1;
+                                maleP[i][j] = 1;
+                            }
+                            else if (rnd2 < 0.25)
+                            {
+                                maleT[i][j] = 1;
+                                maleP[i][j] = 2;
+                            }
+                            else if(rnd2 < 0.375)
+                            {
+                                maleT[i][j] = 1;
+                                maleP[i][j] = 3;
+                            }
+                            else if(rnd2 < 0.5){
+                                maleT[i][j] = 2;
+                                maleP[i][j] = 1;
+                            }
+                            else if(rnd2 < 0.625){
+                                maleT[i][j] = 2;
+                                maleP[i][j] = 3;
+                            }
+                            else if(rnd2 < 0.75){
+                                maleT[i][j] = 3;
+                                maleP[i][j] = 1;
+                            }
+                            else if(rnd2 < 0.875){
+                                maleT[i][j] = 3;
+                                maleP[i][j] = 2;
+                            }
+                            else{
+                                maleT[i][j] = 3;
+                                maleP[i][j] = 3;
+                            }
+                        }
+                        rnd = genrand_real2();
+                        if (rnd < initT2P2)
+                        {
+                            femaleT[i][j] = 2;
+                            femaleP[i][j] = 2;
+                        }
+                        else
+                        {
+                            rnd2 = genrand_real2();
+                            if (rnd2 < 0.125)
+                            {
+                                femaleT[i][j] = 1;
+                                femaleP[i][j] = 1;
+                            }
+                            else if (rnd2 < 0.25)
+                            {
+                                femaleT[i][j] = 1;
+                                femaleP[i][j] = 2;
+                            }
+                            else if(rnd2 < 0.375)
+                            {
+                                femaleT[i][j] = 1;
+                                femaleP[i][j] = 3;
+                            }
+                            else if(rnd2 < 0.5){
+                                femaleT[i][j] = 2;
+                                femaleP[i][j] = 1;
+                            }
+                            else if(rnd2 < 0.625){
+                                femaleT[i][j] = 2;
+                                femaleP[i][j] = 3;
+                            }
+                            else if(rnd2 < 0.75){
+                                femaleT[i][j] = 3;
+                                femaleP[i][j] = 1;
+                            }
+                            else if(rnd2 < 0.875){
+                                femaleT[i][j] = 3;
+                                femaleP[i][j] = 2;
+                            }
+                            else{
+                                femaleT[i][j] = 3;
+                                femaleP[i][j] = 3;
+                            }
+                        }
 
                     // T1P1vsT2P1
 
@@ -424,7 +491,7 @@ int main(void)
                     buffer[buf_count].sum5 = (double)sum5 / (double)(LH * LV);buffer[buf_count].sum6 = (double)sum6 / (double)(LH * LV);
                     buffer[buf_count].sum7 = (double)sum7 / (double)(LH * LV);buffer[buf_count].sum8 = (double)sum8 / (double)(LH * LV);
                     buffer[buf_count].sum9 = (double)sum9 / (double)(LH * LV);
-                    buffer[buf_count].initP2 = initP2; 
+                    buffer[buf_count].initT2P2 = initT2P2; 
                     buf_count++;
                 }
                 // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
@@ -597,9 +664,9 @@ int main(void)
 
                 // 途中の図
                 // 途中の図
-                    if (t % 100 == 0 && fabs(initP2 - mapinitP) < 1e-12&&t<=40000&&fabs(V - K/2) < 1e-12)
+                    if (t % 100 == 0 && fabs(initT2P2 - mapinitP) < 1e-12&&t<=40000&&fabs(V - K/2) < 1e-12)
                     {
-                        sprintf(snapshot_file2, "Three_intmap_K_%f_V_%f_initP_%g_t_%d.dat", K,V, initP2,t);
+                        sprintf(snapshot_file2, "Three_intmap_K_%f_V_%f_initP_%g_t_%d.dat", K,V, initT2P2,t);
 
                         mgenotype = fgenotype = 0;
 
@@ -759,7 +826,7 @@ int main(void)
         fprintf(data1, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
          buffer[n].t, buffer[n].sum1, buffer[n].sum2,buffer[n].sum3,buffer[n].sum4,\
          buffer[n].sum5,buffer[n].sum6,buffer[n].sum7,buffer[n].sum8,buffer[n].sum9,\
-          buffer[n].initP2);
+          buffer[n].initT2P2);
     }
     fclose(data1);
 
@@ -936,10 +1003,10 @@ int main(void)
     //時間変化図
 
     for(i=1;i<=9;i++){
-        initP2=(double)0.1*i;
+        initT2P2=(double)0.1*i;
         gp = popen("gnuplot -persist", "w");
         fprintf(gp, "set terminal png\n");
-        fprintf(gp, "set output 'Vcomp_geno/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initP2_%f.png'\n", K,V,l,a1,a2,initP2);
+        fprintf(gp, "set output 'Genotype_Threealleles_genoport/Three_env_genoport_K_%f_V_%f_l_%f_a1_%f_a2_%f_initT2P2_%f.png'\n", K,V,l,a1,a2,initT2P2);
         fprintf(gp, "set xrange [0:%d]\n", tend);
         fprintf(gp, "set xlabel 't'\n");
         fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -959,6 +1026,22 @@ int main(void)
         fprintf(gp, "plot for [j=2:10] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n",data_file7,(i - 1) * (tend + 1),i * (tend + 1) - 1);
         pclose(gp);
     }
+
+    data_file3 = malloc(100);
+    sprintf(data_file3, "Three_env_final_T2P1_T2P2_K_%f_V_%f_l_%f_a1_%f_a2_%f.dat", K,V,l,a1,a2);
+    // data_file3 = "final_env.dat";
+    data1 = fopen(data_file1, "r");
+    data3 = fopen(data_file3, "w");
+    while (fscanf(data1, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &sum1, &sum2,&sum3,&sum4,&sum5,\
+        &sum6,&sum7,&sum8,&sum9,&init) == 11)
+    {
+        if (x1 == (tend - 10))
+        {
+            fprintf(data3, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", x1, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8,sum9);
+        }
+    }
+    fclose(data3);
+    fclose(data1);
 
     // Map("male", snapshot_file1, initP2, 0);
     // Map("female", snapshot_file1, initP2, 0);
@@ -996,4 +1079,8 @@ int main(void)
     free(genorepo);
     }}}}}
     free(rng_states);
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1e-9;
+    printf("simulation elapsed: %.3f s\n", elapsed);
 }
