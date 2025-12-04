@@ -43,6 +43,9 @@ void Map(const char *sex, const char *filename, double K, double initP, int t)
         fprintf(gp, "set yrange [0:%d]\n", LV - 1);
         fprintf(gp, "set palette defined(1 'blue',2 'green',3 'orange',4 'red')\n");
         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
+        fprintf(gp, "set cbtics ('T1P1' 1, 'T1P2' 2, 'T2P1' 3, 'T2P2' 4)\n");
+        fprintf(gp, "unset autoscale cb\n");
+        fprintf(gp, "set cbrange [1:4]\n");
         fprintf(gp, "set title 'Male map'\n");
         fprintf(gp, "unset xtics;unset ytics\n");
         // fprintf(gp,"unset yticks\n");
@@ -62,6 +65,9 @@ void Map(const char *sex, const char *filename, double K, double initP, int t)
         // fprintf(gp,"set xlabel 'T2'\n");
         fprintf(gp, "set yrange [0:%d]\n", LV - 1);
         fprintf(gp, "set palette defined(1 'blue',2 'green',3 'orange',4 'red')\n");
+        fprintf(gp, "set cbtics ('T1P1' 1, 'T1P2' 2, 'T2P1' 3, 'T2P2' 4)\n");
+        fprintf(gp, "unset autoscale cb\n");
+        fprintf(gp, "set cbrange [1:4]\n");
         // fprintf(gp,"set multiplot layout 1,2 title 'Genotype map (T×P: 0=T1P1, 1=T1P2, 2=T2P1, 3=T2P2)'\n");
         fprintf(gp, "set title 'Female map'\n");
         fprintf(gp, "unset xtics;unset ytics\n");
@@ -879,9 +885,9 @@ int main(void)
             fprintf(gp, "titles='T1P1 T1P2 T2P1 T2P2'\n");
 
             fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
-            fprintf(gp, "set style line 2 lc rgb \"#FFFF00\" lw 2\n");
-            fprintf(gp, "set style line 3 lc rgb \"#FF0000\" lw 2\n");
-            fprintf(gp, "set style line 4 lc rgb \"#000000\" lw 2\n");
+            fprintf(gp, "set style line 2 lc rgb \"#00ff4cef\" lw 2\n");
+            fprintf(gp, "set style line 3 lc rgb \"#ff8800ff\" lw 2\n");
+            fprintf(gp, "set style line 4 lc rgb \"#FF0000\" lw 2\n");
 
             // fprintf(gp, "plot \'%s\' using 2:3 with points pointtype 7 lc rgb 'blue' title \"survivalrateV=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file4, V, data_file5, data_file6);
             fprintf(gp, "plot for [j=2:5] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file7, (i - 1) * (tend + 1), i * (tend + 1) - 1);

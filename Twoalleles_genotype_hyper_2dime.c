@@ -17,7 +17,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 #define a1 3.0 // P2メスがT2オスを選好する倍率3.0
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 100000 // 4000 80000 10000
+#define tend 10000 // 4000 80000 10000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 1
@@ -243,11 +243,11 @@ int main(void)
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
 
-    for (iK = 0; iK <= 2; iK++)
+    for (iK = 0; iK <= 14; iK++)
     {
         // K=(double)(iK*2-1)*0.00;
         // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = 0.15 + (double)iK * 0.01;
+        K = 0.00 + (double)iK * 0.01;
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
@@ -450,6 +450,14 @@ int main(void)
                 genorepo[geno_count].sum3 = (double)sum3 / (double)(LH * LV);
                 genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
                 geno_count++;
+
+                buffer[buf_count].t = 0;
+                buffer[buf_count].geno1 = (double)sum1 / (double)(LH * LV);
+                buffer[buf_count].geno2 = (double)sum2 / (double)(LH * LV);
+                buffer[buf_count].geno3 = (double)sum3 / (double)(LH * LV);
+                buffer[buf_count].geno4 = (double)sum4 / (double)(LH * LV);
+                buffer[buf_count].initT2P1 = initT2P1;
+                buf_count++;
 // fclose(data7);
 
 // 初期の図
@@ -899,7 +907,7 @@ int main(void)
         printf("Ok\n");
         // T1P1-T2P2-T2P1図
         data_file3 = malloc(100);
-        sprintf(data_file3, "Two_env_3dime_final_T2P2_K_%f.dat", K);
+        sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
         // data_file3 = "final_env.dat";
         gp = fopen(data_file1, "r");
         data3 = fopen(data_file3, "w");
