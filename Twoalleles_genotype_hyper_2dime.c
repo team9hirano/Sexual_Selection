@@ -34,11 +34,11 @@ void Map(const char *sex, const char *filename, double K, double initP, int t)
     if (strcmp(sex, "male") == 0)
     {
         if (strstr(filename, "stmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapSt_%s_two_%g_initP_%g.png'\n", sex, K, initP);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapSt_%s_two_%g_initP_%g.png'\n", sex, K, initP);
         else if (strstr(filename, "intmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapInt_%s_two_%g_initP_%g_t_%06d.png'\n", sex, K, initP, t);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapInt_%s_two_%g_initP_%g_t_%06d.png'\n", sex, K, initP, t);
         else if (strstr(filename, "finmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapFin_%s_two_%g_initP_%g.png'\n", sex, K, initP);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapFin_%s_two_%g_initP_%g.png'\n", sex, K, initP);
         fprintf(gp, "unset key\n");
         fprintf(gp, "set size ratio -1\n");
         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
@@ -57,11 +57,11 @@ void Map(const char *sex, const char *filename, double K, double initP, int t)
     else if (strcmp(sex, "female") == 0)
     {
         if (strstr(filename, "stmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapSt_%s_two_%g_initP_%g.png'\n", sex, K, initP);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapSt_%s_two_%g_initP_%g.png'\n", sex, K, initP);
         else if (strstr(filename, "intmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapInt_%s_two_%g_initP_%g_t_%06d.png'\n", sex, K, initP, t);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapInt_%s_two_%g_initP_%g_t_%06d.png'\n", sex, K, initP, t);
         else if (strstr(filename, "finmap"))
-            fprintf(gp, "set output 'Twoalleles_hyper_map/MapFin_%s_two_%g_initP_%g.png'\n", sex, K, initP);
+            fprintf(gp, "set output 'Genotype_twoalleles_map/MapFin_%s_two_%g_initP_%g.png'\n", sex, K, initP);
         fprintf(gp, "unset key\n");
         fprintf(gp, "set size ratio -1\n");
         fprintf(gp, "set xrange [0:%d]\n", LH - 1);
@@ -243,11 +243,11 @@ int main(void)
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
 
-    for (iK = 0; iK <= 1; iK++)
+    for (iK = 0; iK <= 15; iK++)
     {
         // K=(double)(iK*2-1)*0.00;
         // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = 0.0 + (double)iK * 0.01;
+        K = 0.02 + (double)iK * 0.01;
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
@@ -718,47 +718,47 @@ int main(void)
 
                     // 途中の図
                     // 途中の図
-                    // if (t % 100 == 0 && fabs(initP2 - mapinitP) < 1e-12)
-                    // {
-                    //     sprintf(snapshot_file2, "Two_intmap_t_%d_cost_%f_initP_%g.dat", t, K, mapinitP);
+                    if (t % 100 == 0 && fabs(initT2P1 - mapinitP) < 1e-12 && t < 40000)
+                    {
+                        sprintf(snapshot_file2, "Two_intmap_t_%d_cost_%f_initT2P1_%g.dat", t, K, initT2P1);
 
-                    //     mgenotype = fgenotype = 0;
+                        mgenotype = fgenotype = 0;
 
-                    //     for (i = 0; i < LH; i++)
-                    //     {
-                    //         for (j = 0; j < LV; j++)
-                    //         {
-                    //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                    //                 mgenotype = 1;
-                    //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                    //                 mgenotype = 2;
-                    //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                    //                 mgenotype = 3;
-                    //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                    //                 mgenotype = 4;
-                    //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                    //                 fgenotype = 1;
-                    //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                    //                 fgenotype = 2;
-                    //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                    //                 fgenotype = 3;
-                    //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                    //                 fgenotype = 4;
-                    //             recomap[i * LH + j].i = i;
-                    //             recomap[i * LH + j].j = j;
-                    //             recomap[i * LH + j].mgenotype = mgenotype;
-                    //             recomap[i * LH + j].fgenotype = fgenotype;
-                    //         }
-                    //     }
-                    //     snapshot2 = fopen(snapshot_file2, "w");
-                    //     for (n = 0; n < LH * LV; n++)
-                    //     {
-                    //         fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
-                    //     }
-                    //     fclose(snapshot2);
-                    //     Map("male", snapshot_file2, K, mapinitP, t);
-                    //     Map("female", snapshot_file2, K, mapinitP, t);
-                    // }
+                        for (i = 0; i < LH; i++)
+                        {
+                            for (j = 0; j < LV; j++)
+                            {
+                                if (maleT[i][j] == 1 && maleP[i][j] == 1)
+                                    mgenotype = 1;
+                                else if (maleT[i][j] == 1 && maleP[i][j] == 2)
+                                    mgenotype = 2;
+                                else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+                                    mgenotype = 3;
+                                else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+                                    mgenotype = 4;
+                                if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
+                                    fgenotype = 1;
+                                else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
+                                    fgenotype = 2;
+                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
+                                    fgenotype = 3;
+                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
+                                    fgenotype = 4;
+                                recomap[i * LH + j].i = i;
+                                recomap[i * LH + j].j = j;
+                                recomap[i * LH + j].mgenotype = mgenotype;
+                                recomap[i * LH + j].fgenotype = fgenotype;
+                            }
+                        }
+                        snapshot2 = fopen(snapshot_file2, "w");
+                        for (n = 0; n < LH * LV; n++)
+                        {
+                            fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
+                        }
+                        fclose(snapshot2);
+                        Map("male", snapshot_file2, K, mapinitP, t);
+                        Map("female", snapshot_file2, K, mapinitP, t);
+                    }
 
                     // 遺伝子型の割合出力
                     sum1 = sum2 = sum3 = sum4 = 0.0;
@@ -972,7 +972,7 @@ int main(void)
             initT2P1 = (double)0.1 * i;
             gp = popen("gnuplot -persist", "w");
             fprintf(gp, "set terminal png\n");
-            fprintf(gp, "set output 'Twoalleles_hyper_genoportion_new/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
+            fprintf(gp, "set output 'Genotype_twoalleles_genoport/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
             fprintf(gp, "set xrange [0:%d]\n", tend);
             fprintf(gp, "set xlabel 't'\n");
             fprintf(gp, "set yrange [0:%f]\n", 1.0);
