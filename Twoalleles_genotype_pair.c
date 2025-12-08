@@ -1,4 +1,5 @@
 /* nearest neighbor interaction */
+//図はできてない！
 #define _POSIX_C_SOURCE 199309L
 #include <time.h>
 #include <math.h>
@@ -168,6 +169,34 @@ static inline void genotype(double *sum, int *sexT0, int *sexP0, mt_state *rng_s
     }
 }
 
+static inline void calc_pair(double *sum_pair,int i, int j, int **restrict maleT, int **restrict maleP)
+{
+    int di[4] = {-1, 0, 1, 0};
+    int dj[4] = {0, 1, 0, -1};
+    int i2, j2, n, t, p, id;
+    double w;
+    
+    for (n = 0; n < 4; n++)
+    {
+        i2 = (i + di[n] + LH) % LH;
+        j2 = (j + dj[n] + LV) % LV;
+        // printf("OK2");
+        t = maleT[i2][j2];
+        p = maleP[i2][j2];
+        // printf("OK3");
+        if(maleT[i][j]==1&&maleP[i][j]==1){
+            if(t==1&&p==1)sum_pair[0]+=1.0;
+            else if(t==2&&p==1)sum_pair[1]+=1.0;
+            else if(t==2&&p==2)sum_pair[2]+=1.0;
+        }else if(maleT[i][j]==2&&maleP[i][j]==1){
+            if(t==2&&p==1)sum_pair[3]+=1.0;
+            else if(t==2&&p==2)sum_pair[4]+=1.0;
+        }else if(maleT[i][j]==2&&maleP[i][j]==2){
+            if(t==2&&p==2)sum_pair[5]+=1.0;
+        }
+    }
+}
+
 int main(void)
 {
     // 新しく挿入
@@ -185,11 +214,12 @@ int main(void)
     int maleI, maleJ, femaleI, femaleJ;
     int numMT1, numMT2, numMT3, numMP1, numMP2, numMP3;
     int numFT1, numFT2, numFT3, numFP1, numFP2, numFP3;
-    double sum[4], gsum[4];
+    double sum[4], gsum[4],sum_pair[6];
     double rnd, rnd2, rnd3, rnd4, rnd5, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9, gen1, gen2, gen3, gen4, geno1, geno2, geno3, geno4, init, init1;
     double gsum1, gsum2, gsum3, gsum4, gsum5, gsum6, gsum7, gsum8, gsum9;
     int iK, iV, il, ia2, ia1;
     double K, V, l, a2;
+    double x11,x21,x22,x31,x32,x33;
     int maleT0, maleP0, femaleT0, femaleP0, mgenotype, fgenotype, count;
     FILE *gp, *data1, *data2, *data3, *data4, *data5, *data6, *data7;
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
@@ -224,6 +254,15 @@ int main(void)
     } Recordmap;
 
     Recordmap *recomap = malloc(sizeof(Recordmap) * LH * LV);
+    
+    //局所的ペア頻度
+    typedef struct
+    {
+        int t;
+        double x11,x21,x22,x31,x32,x33, initT2P1;
+    } Localpair;
+    Localpair *Pair = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+    int pair_count = 0;
 
     //"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
     int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
@@ -294,6 +333,9 @@ int main(void)
         data_file2 = malloc(100);
         sprintf(data_file2, "Two_env_2dime_T2P2_flow_K_%f.dat", K);
 
+        data_file4 = malloc(100);
+        sprintf(data_file4, "Two_env_2dime_T2P2_pair_K_%f.dat", K);
+
         data_file7 = malloc(100);
         sprintf(data_file7, "Two_env_genoport_K_%f.dat", K);
 
@@ -301,6 +343,7 @@ int main(void)
 
         buf_count = 0;
         geno_count = 0;
+        pair_count=0;
         for (k = 1; k <= 1; k++)
         {
             // initT2 = 0.1 * initialT;
@@ -399,6 +442,7 @@ int main(void)
 
                 // 最初の割合を出力
                 sum1 = sum2 = sum3 = sum4 = 0.0;
+                for(i=0;i<6;i++)sum_pair[i]=0.0;
                 // data7=fopen(data_file7,"a");
                 for (i = 0; i < LH; i++)
                 {
@@ -413,6 +457,7 @@ int main(void)
                             sum3 += 1.0;
                         else if (maleT[i][j] == 2 && maleP[i][j] == 2)
                             sum4 += 1.0;
+                        calc_pair(sum_pair,i,j,maleT,maleP);
                     }
                 }
                 // fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\n", 0,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
@@ -431,6 +476,16 @@ int main(void)
                 buffer[buf_count].geno4 = (double)sum4 / (double)(LH * LV);
                 buffer[buf_count].initT2P1 = initT2P1;
                 buf_count++;
+
+                Pair[pair_count].t=0;
+                Pair[pair_count].x11=sum_pair[0]/((double)4.0*sum1);
+                Pair[pair_count].x21=sum_pair[1]/((double)4.0*sum1);
+                Pair[pair_count].x31=sum_pair[2]/((double)4.0*sum1);
+                Pair[pair_count].x22=sum_pair[3]/((double)4.0*sum3);
+                Pair[pair_count].x32=sum_pair[4]/((double)4.0*sum3);
+                Pair[pair_count].x33=sum_pair[5]/((double)4.0*sum4);
+                Pair[pair_count].initT2P1=initT2P1;
+                pair_count++;   
 
 // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
 #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
@@ -588,47 +643,47 @@ int main(void)
 
                     // 途中の図
                     // 途中の図
-                    if (t % 100 == 0 && fabs(initT2P1 - mapinitP) < 1e-12 && t < 40000)
-                    {
-                        sprintf(snapshot_file2, "Two_intmap_t_%d_cost_%f_initT2P1_%g.dat", t, K, initT2P1);
+                    // if (t % 100 == 0 && fabs(initT2P1 - mapinitP) < 1e-12 && t < 40000)
+                    // {
+                    //     sprintf(snapshot_file2, "Two_intmap_t_%d_cost_%f_initT2P1_%g.dat", t, K, initT2P1);
 
-                        mgenotype = fgenotype = 0;
+                    //     mgenotype = fgenotype = 0;
 
-                        for (i = 0; i < LH; i++)
-                        {
-                            for (j = 0; j < LV; j++)
-                            {
-                                if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                                    mgenotype = 1;
-                                else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                                    mgenotype = 2;
-                                else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                                    mgenotype = 3;
-                                else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                                    mgenotype = 4;
-                                if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                                    fgenotype = 1;
-                                else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                                    fgenotype = 2;
-                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                                    fgenotype = 3;
-                                else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                                    fgenotype = 4;
-                                recomap[i * LH + j].i = i;
-                                recomap[i * LH + j].j = j;
-                                recomap[i * LH + j].mgenotype = mgenotype;
-                                recomap[i * LH + j].fgenotype = fgenotype;
-                            }
-                        }
-                        snapshot2 = fopen(snapshot_file2, "w");
-                        for (n = 0; n < LH * LV; n++)
-                        {
-                            fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
-                        }
-                        fclose(snapshot2);
-                        Map("male", snapshot_file2, K, mapinitP, t);
-                        Map("female", snapshot_file2, K, mapinitP, t);
-                    }
+                    //     for (i = 0; i < LH; i++)
+                    //     {
+                    //         for (j = 0; j < LV; j++)
+                    //         {
+                    //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
+                    //                 mgenotype = 1;
+                    //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
+                    //                 mgenotype = 2;
+                    //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+                    //                 mgenotype = 3;
+                    //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+                    //                 mgenotype = 4;
+                    //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
+                    //                 fgenotype = 1;
+                    //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
+                    //                 fgenotype = 2;
+                    //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
+                    //                 fgenotype = 3;
+                    //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
+                    //                 fgenotype = 4;
+                    //             recomap[i * LH + j].i = i;
+                    //             recomap[i * LH + j].j = j;
+                    //             recomap[i * LH + j].mgenotype = mgenotype;
+                    //             recomap[i * LH + j].fgenotype = fgenotype;
+                    //         }
+                    //     }
+                    //     snapshot2 = fopen(snapshot_file2, "w");
+                    //     for (n = 0; n < LH * LV; n++)
+                    //     {
+                    //         fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
+                    //     }
+                    //     fclose(snapshot2);
+                    //     Map("male", snapshot_file2, K, mapinitP, t);
+                    //     Map("female", snapshot_file2, K, mapinitP, t);
+                    // }
 
                     // 遺伝子型の割合出力
                     sum1 = sum2 = sum3 = sum4 = 0.0;
@@ -645,6 +700,7 @@ int main(void)
                                 sum3 += 1;
                             else if ((maleT[i][j] == 2 && maleP[i][j] == 2))
                                 sum4 += 1;
+                            calc_pair(sum_pair,i,j,maleT,maleP);
                         }
                     }
                     genorepo[geno_count].t = t;
@@ -653,6 +709,16 @@ int main(void)
                     genorepo[geno_count].sum3 = (double)sum3 / (double)(LH * LV);
                     genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
                     geno_count++;
+
+                    Pair[pair_count].t=t;
+                    Pair[pair_count].x11=sum_pair[0]/((double)4.0*sum1);
+                    Pair[pair_count].x21=sum_pair[1]/((double)4.0*sum1);
+                    Pair[pair_count].x31=sum_pair[2]/((double)4.0*sum1);
+                    Pair[pair_count].x22=sum_pair[3]/((double)4.0*sum3);
+                    Pair[pair_count].x32=sum_pair[4]/((double)4.0*sum3);
+                    Pair[pair_count].x33=sum_pair[5]/((double)4.0*sum4);
+                    Pair[pair_count].initT2P1=initT2P1;
+                    pair_count++;
 
                     if (t % 10 == 0)
                     {
@@ -683,6 +749,15 @@ int main(void)
                     genorepo[n].t, genorepo[n].sum1, genorepo[n].sum2, genorepo[n].sum3, genorepo[n].sum4);
         }
         fclose(data7);
+
+        data4 = fopen(data_file4, "w");
+        for (int n = 0; n < pair_count; n++)
+        {
+            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",
+                    Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,\
+                     Pair[n].x32, Pair[n].x33, Pair[n].initT2P1);
+        }
+        fclose(data4);
 
         printf("Ok\n");
         // T1P1-T2P2-T2P1図
@@ -731,12 +806,7 @@ int main(void)
         fprintf(gp, "set xlabel 'T1P1'\n");
         fprintf(gp, "set yrange [0:%f]\n", 1.0);
         fprintf(gp, "set ylabel 'T2P1'\n");
-        // fprintf(gp, "set zrange [0:%f]\n", 1.0);
-        // fprintf(gp, "set zlabel 'T2P1'\n");
-
         fprintf(gp, "plot \'%s\' using 2:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($4-$1):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-        // fprintf(gp, "splot \'%s\' using 2:5:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:2:($4-$1):($6-$3):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:5:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-
         pclose(gp);
 
         // T1P1-T2P2図
@@ -748,12 +818,7 @@ int main(void)
         fprintf(gp, "set xlabel 'T1P1'\n");
         fprintf(gp, "set yrange [0:%f]\n", 1.0);
         fprintf(gp, "set ylabel 'T2P2'\n");
-        // fprintf(gp, "set zrange [0:%f]\n", 1.0);
-        // fprintf(gp, "set zlabel 'T2P1'\n");
-
         fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-        // fprintf(gp, "splot \'%s\' using 2:5:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:2:($4-$1):($6-$3):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:5:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-
         pclose(gp);
 
         for (i = 1; i <= 9; i++)
@@ -767,13 +832,10 @@ int main(void)
             fprintf(gp, "set yrange [0:%f]\n", 1.0);
             fprintf(gp, "set ylabel 'genotype_frequency'\n");
             fprintf(gp, "titles='T1P1 T1P2 T2P1 T2P2'\n");
-
             fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
             fprintf(gp, "set style line 2 lc rgb \"#00CC00\" lw 2\n");
             fprintf(gp, "set style line 3 lc rgb \"#FF8800\" lw 2\n");
             fprintf(gp, "set style line 4 lc rgb \"#FF0000\" lw 2\n");
-
-            // fprintf(gp, "plot \'%s\' using 2:3 with points pointtype 7 lc rgb 'blue' title \"survivalrateV=%f\",\'%s\' using 1:2:($3-$1):($4-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:3 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file4, V, data_file5, data_file6);
             fprintf(gp, "plot for [j=2:5] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file7, (i - 1) * (tend + 1), i * (tend + 1) - 1);
             pclose(gp);
         }
@@ -805,6 +867,7 @@ int main(void)
     free(buffer);
     free(genorepo);
     free(rng_states);
+    free(Pair);
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1e-9;
