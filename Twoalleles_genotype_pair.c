@@ -783,40 +783,40 @@ int main(void)
         fclose(data4);
 
         // T1P1-T2P2-T2P1図
-        // data_file3 = malloc(100);
-        // sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
-        // gp = fopen(data_file1, "r");
-        // data3 = fopen(data_file3, "w");
-        // while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) == 6)
-        // {
-        //     if (x1 == (tend - 10))
-        //     {
+        data_file3 = malloc(100);
+        sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
+        gp = fopen(data_file1, "r");
+        data3 = fopen(data_file3, "w");
+        while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) == 6)
+        {
+            if (x1 == (tend - 10))
+            {
 
-        //         fprintf(data3, "%d\t%f\t%f\t%f\t%f\n", x1, gen1, gen2, gen3, gen4);
-        //     }
-        // }
-        // fclose(data3);
-        // fclose(gp);
+                fprintf(data3, "%d\t%f\t%f\t%f\t%f\n", x1, gen1, gen2, gen3, gen4);
+            }
+        }
+        fclose(data3);
+        fclose(gp);
 
-        // data1 = fopen(data_file1, "r");
-        // data2 = fopen(data_file2, "w");
-        // if (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) != 6)
-        //     return 1;
-        // while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x2, &geno1, &geno2, &geno3, &geno4, &init1) == 6)
-        // {
-        //     if (fabs(init - init1) < 1e-12)
-        //     {
-        //         fprintf(data2, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", gen1, gen3, gen4, geno1, geno3, geno4);
-        //     }
-        //     x1 = x2;
-        //     gen1 = geno1;
-        //     gen2 = geno2;
-        //     gen3 = geno3;
-        //     gen4 = geno4;
-        //     init = init1;
-        // }
-        // fclose(data1);
-        // fclose(data2);
+        data1 = fopen(data_file1, "r");
+        data2 = fopen(data_file2, "w");
+        if (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) != 6)
+            return 1;
+        while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x2, &geno1, &geno2, &geno3, &geno4, &init1) == 6)
+        {
+            if (fabs(init - init1) < 1e-12)
+            {
+                fprintf(data2, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", gen1, gen3, gen4, geno1, geno3, geno4);
+            }
+            x1 = x2;
+            gen1 = geno1;
+            gen2 = geno2;
+            gen3 = geno3;
+            gen4 = geno4;
+            init = init1;
+        }
+        fclose(data1);
+        fclose(data2);
 
         // // T1P1-T2P1図
         // gp = popen("gnuplot -persist", "w");
