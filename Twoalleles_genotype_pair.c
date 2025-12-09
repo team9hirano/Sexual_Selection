@@ -761,82 +761,103 @@ int main(void)
 
         printf("Ok\n");
         // T1P1-T2P2-T2P1図
-        data_file3 = malloc(100);
-        sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
-        // data_file3 = "final_env.dat";
-        gp = fopen(data_file1, "r");
-        data3 = fopen(data_file3, "w");
-        while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) == 6)
+        // data_file3 = malloc(100);
+        // sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
+        // gp = fopen(data_file1, "r");
+        // data3 = fopen(data_file3, "w");
+        // while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) == 6)
+        // {
+        //     if (x1 == (tend - 10))
+        //     {
+
+        //         fprintf(data3, "%d\t%f\t%f\t%f\t%f\n", x1, gen1, gen2, gen3, gen4);
+        //     }
+        // }
+        // fclose(data3);
+        // fclose(gp);
+
+        // data1 = fopen(data_file1, "r");
+        // data2 = fopen(data_file2, "w");
+        // if (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) != 6)
+        //     return 1;
+        // while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x2, &geno1, &geno2, &geno3, &geno4, &init1) == 6)
+        // {
+        //     if (fabs(init - init1) < 1e-12)
+        //     {
+        //         fprintf(data2, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", gen1, gen3, gen4, geno1, geno3, geno4);
+        //     }
+        //     x1 = x2;
+        //     gen1 = geno1;
+        //     gen2 = geno2;
+        //     gen3 = geno3;
+        //     gen4 = geno4;
+        //     init = init1;
+        // }
+        // fclose(data1);
+        // fclose(data2);
+
+        // // T1P1-T2P1図
+        // gp = popen("gnuplot -persist", "w");
+        // fprintf(gp, "set terminal png\n");
+        // fprintf(gp, "set term pngcairo size 1000,700\n");
+        // fprintf(gp, "set output 'Genotype_Twoalleles/K_%f_a1_%f_T1P1_T2P1.png'\n", K, a1);
+        // fprintf(gp, "set xrange [0:%f]\n", 1.0);
+        // fprintf(gp, "set xlabel 'T1P1'\n");
+        // fprintf(gp, "set yrange [0:%f]\n", 1.0);
+        // fprintf(gp, "set ylabel 'T2P1'\n");
+        // fprintf(gp, "plot \'%s\' using 2:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($4-$1):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
+        // pclose(gp);
+
+        // // T1P1-T2P2図
+        // gp = popen("gnuplot -persist", "w");
+        // fprintf(gp, "set terminal png\n");
+        // fprintf(gp, "set term pngcairo size 1000,700\n");
+        // fprintf(gp, "set output 'Genotype_Twoalleles/K_%f_a1_%f_T1P1_T2P2.png'\n", K, a1);
+        // fprintf(gp, "set xrange [0:%f]\n", 1.0);
+        // fprintf(gp, "set xlabel 'T1P1'\n");
+        // fprintf(gp, "set yrange [0:%f]\n", 1.0);
+        // fprintf(gp, "set ylabel 'T2P2'\n");
+        // fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
+        // pclose(gp);
+
+        // for (i = 1; i <= 9; i++)
+        // {
+        //     initT2P1 = (double)0.1 * i;
+        //     gp = popen("gnuplot -persist", "w");
+        //     fprintf(gp, "set terminal png\n");
+        //     fprintf(gp, "set output 'Genotype_twoalleles_genoport/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
+        //     fprintf(gp, "set xrange [0:%d]\n", tend);
+        //     fprintf(gp, "set xlabel 't'\n");
+        //     fprintf(gp, "set yrange [0:%f]\n", 1.0);
+        //     fprintf(gp, "set ylabel 'genotype_frequency'\n");
+        //     fprintf(gp, "titles='T1P1 T1P2 T2P1 T2P2'\n");
+        //     fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
+        //     fprintf(gp, "set style line 2 lc rgb \"#00CC00\" lw 2\n");
+        //     fprintf(gp, "set style line 3 lc rgb \"#FF8800\" lw 2\n");
+        //     fprintf(gp, "set style line 4 lc rgb \"#FF0000\" lw 2\n");
+        //     fprintf(gp, "plot for [j=2:5] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file7, (i - 1) * (tend + 1), i * (tend + 1) - 1);
+        //     pclose(gp);
+        // }
+
+        //pairのグラフ
+        for (i = 1; i <= 4; i++)
         {
-            if (x1 == (tend - 10))
-            {
-
-                fprintf(data3, "%d\t%f\t%f\t%f\t%f\n", x1, gen1, gen2, gen3, gen4);
-            }
-        }
-        fclose(data3);
-        fclose(gp);
-
-        data1 = fopen(data_file1, "r");
-        data2 = fopen(data_file2, "w");
-        if (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) != 6)
-            return 1;
-        while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x2, &geno1, &geno2, &geno3, &geno4, &init1) == 6)
-        {
-            if (fabs(init - init1) < 1e-12)
-            {
-                fprintf(data2, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", gen1, gen3, gen4, geno1, geno3, geno4);
-            }
-            x1 = x2;
-            gen1 = geno1;
-            gen2 = geno2;
-            gen3 = geno3;
-            gen4 = geno4;
-            init = init1;
-        }
-        fclose(data1);
-        fclose(data2);
-
-        // T1P1-T2P1図
-        gp = popen("gnuplot -persist", "w");
-        fprintf(gp, "set terminal png\n");
-        fprintf(gp, "set term pngcairo size 1000,700\n");
-        fprintf(gp, "set output 'Genotype_Twoalleles/K_%f_a1_%f_T1P1_T2P1.png'\n", K, a1);
-        fprintf(gp, "set xrange [0:%f]\n", 1.0);
-        fprintf(gp, "set xlabel 'T1P1'\n");
-        fprintf(gp, "set yrange [0:%f]\n", 1.0);
-        fprintf(gp, "set ylabel 'T2P1'\n");
-        fprintf(gp, "plot \'%s\' using 2:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($4-$1):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-        pclose(gp);
-
-        // T1P1-T2P2図
-        gp = popen("gnuplot -persist", "w");
-        fprintf(gp, "set terminal png\n");
-        fprintf(gp, "set term pngcairo size 1000,700\n");
-        fprintf(gp, "set output 'Genotype_Twoalleles/K_%f_a1_%f_T1P1_T2P2.png'\n", K, a1);
-        fprintf(gp, "set xrange [0:%f]\n", 1.0);
-        fprintf(gp, "set xlabel 'T1P1'\n");
-        fprintf(gp, "set yrange [0:%f]\n", 1.0);
-        fprintf(gp, "set ylabel 'T2P2'\n");
-        fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
-        pclose(gp);
-
-        for (i = 1; i <= 9; i++)
-        {
-            initT2P1 = (double)0.1 * i;
+            initT2P1 = (double)0.2 * i;
             gp = popen("gnuplot -persist", "w");
             fprintf(gp, "set terminal png\n");
-            fprintf(gp, "set output 'Genotype_twoalleles_genoport/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
+            fprintf(gp, "set output 'Genotype_Twoalleles_pair/Two_env_pair_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
             fprintf(gp, "set xrange [0:%d]\n", tend);
             fprintf(gp, "set xlabel 't'\n");
             fprintf(gp, "set yrange [0:%f]\n", 1.0);
             fprintf(gp, "set ylabel 'genotype_frequency'\n");
-            fprintf(gp, "titles='T1P1 T1P2 T2P1 T2P2'\n");
+            fprintf(gp, "titles='x_1/1 x_2/1 x_3/1 x_2/2 x_3/2 x_3/3'\n");
             fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
             fprintf(gp, "set style line 2 lc rgb \"#00CC00\" lw 2\n");
             fprintf(gp, "set style line 3 lc rgb \"#FF8800\" lw 2\n");
             fprintf(gp, "set style line 4 lc rgb \"#FF0000\" lw 2\n");
-            fprintf(gp, "plot for [j=2:5] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file7, (i - 1) * (tend + 1), i * (tend + 1) - 1);
+            fprintf(gp, "set style line 5 lc rgb \"#FF00FF\" lw 2\n");
+            fprintf(gp, "set style line 6 lc rgb \"#000000\" lw 2\n");
+            fprintf(gp, "plot for [j=2:7] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file4, (i - 1) * (tend + 1), i * (tend + 1) - 1);
             pclose(gp);
         }
 
