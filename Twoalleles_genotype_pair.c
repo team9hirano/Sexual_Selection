@@ -1,5 +1,5 @@
 /* nearest neighbor interaction */
-//図はできてない！
+// 図はできてない！
 #define _POSIX_C_SOURCE 199309L
 #include <time.h>
 #include <math.h>
@@ -169,13 +169,13 @@ static inline void genotype(double *sum, int *sexT0, int *sexP0, mt_state *rng_s
     }
 }
 
-static inline void calc_pair(double *sum_pair,int i, int j, int **restrict maleT, int **restrict maleP)
+static inline void calc_pair(double *sum_pair, int i, int j, int **restrict maleT, int **restrict maleP)
 {
     int di[4] = {-1, 0, 1, 0};
     int dj[4] = {0, 1, 0, -1};
     int i2, j2, n, t, p, id;
     double w;
-    
+
     for (n = 0; n < 4; n++)
     {
         i2 = (i + di[n] + LH) % LH;
@@ -184,15 +184,26 @@ static inline void calc_pair(double *sum_pair,int i, int j, int **restrict maleT
         t = maleT[i2][j2];
         p = maleP[i2][j2];
         // printf("OK3");
-        if(maleT[i][j]==1&&maleP[i][j]==1){
-            if(t==1&&p==1)sum_pair[0]+=1.0;
-            else if(t==2&&p==1)sum_pair[1]+=1.0;
-            else if(t==2&&p==2)sum_pair[2]+=1.0;
-        }else if(maleT[i][j]==2&&maleP[i][j]==1){
-            if(t==2&&p==1)sum_pair[3]+=1.0;
-            else if(t==2&&p==2)sum_pair[4]+=1.0;
-        }else if(maleT[i][j]==2&&maleP[i][j]==2){
-            if(t==2&&p==2)sum_pair[5]+=1.0;
+        if (maleT[i][j] == 1 && maleP[i][j] == 1)
+        {
+            if (t == 1 && p == 1)
+                sum_pair[0] += 1.0;
+            else if (t == 2 && p == 1)
+                sum_pair[1] += 1.0;
+            else if (t == 2 && p == 2)
+                sum_pair[2] += 1.0;
+        }
+        else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+        {
+            if (t == 2 && p == 1)
+                sum_pair[3] += 1.0;
+            else if (t == 2 && p == 2)
+                sum_pair[4] += 1.0;
+        }
+        else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+        {
+            if (t == 2 && p == 2)
+                sum_pair[5] += 1.0;
         }
     }
 }
@@ -214,12 +225,13 @@ int main(void)
     int maleI, maleJ, femaleI, femaleJ;
     int numMT1, numMT2, numMT3, numMP1, numMP2, numMP3;
     int numFT1, numFT2, numFT3, numFP1, numFP2, numFP3;
-    double sum[4], gsum[4],sum_pair[6];
+    double sum[4], gsum[4], sum_pair[6];
     double rnd, rnd2, rnd3, rnd4, rnd5, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9, gen1, gen2, gen3, gen4, geno1, geno2, geno3, geno4, init, init1;
     double gsum1, gsum2, gsum3, gsum4, gsum5, gsum6, gsum7, gsum8, gsum9;
     int iK, iV, il, ia2, ia1;
     double K, V, l, a2;
-    double x11,x21,x22,x31,x32,x33;
+    double x11, x21, x22, x31, x32, x33;
+    double nx11, nx21, nx22, nx31, nx32, nx33;
     int maleT0, maleP0, femaleT0, femaleP0, mgenotype, fgenotype, count;
     FILE *gp, *data1, *data2, *data3, *data4, *data5, *data6, *data7;
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
@@ -254,12 +266,12 @@ int main(void)
     } Recordmap;
 
     Recordmap *recomap = malloc(sizeof(Recordmap) * LH * LV);
-    
-    //局所的ペア頻度
+
+    // 局所的ペア頻度
     typedef struct
     {
         int t;
-        double x11,x21,x22,x31,x32,x33, initT2P1;
+        double x11, x21, x22, x31, x32, x33, initT2P1;
     } Localpair;
     Localpair *Pair = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
     int pair_count = 0;
@@ -286,7 +298,7 @@ int main(void)
     {
         // K=(double)(iK*2-1)*0.00;
         // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = 0.005 + (double)iK * 0.01;
+        K = 0.02 + (double)iK * 0.01;
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
@@ -334,7 +346,13 @@ int main(void)
         sprintf(data_file2, "Two_env_2dime_T2P2_flow_K_%f.dat", K);
 
         data_file4 = malloc(100);
-        sprintf(data_file4, "Two_env_2dime_T2P2_pair_K_%f.dat", K);
+        sprintf(data_file4, "Two_env_2dime_pair_K_%f.dat", K);
+
+        data_file5 = malloc(100);
+        sprintf(data_file5, "Two_env_2dime_pair_flow_K_%f.dat", K);
+
+        data_file6 = malloc(100);
+        sprintf(data_file6, "Two_env_2dime_pair_final_K_%f.dat", K);
 
         data_file7 = malloc(100);
         sprintf(data_file7, "Two_env_genoport_K_%f.dat", K);
@@ -343,7 +361,7 @@ int main(void)
 
         buf_count = 0;
         geno_count = 0;
-        pair_count=0;
+        pair_count = 0;
         for (k = 1; k <= 1; k++)
         {
             // initT2 = 0.1 * initialT;
@@ -442,7 +460,8 @@ int main(void)
 
                 // 最初の割合を出力
                 sum1 = sum2 = sum3 = sum4 = 0.0;
-                for(i=0;i<6;i++)sum_pair[i]=0.0;
+                for (i = 0; i < 6; i++)
+                    sum_pair[i] = 0.0;
                 // data7=fopen(data_file7,"a");
                 for (i = 0; i < LH; i++)
                 {
@@ -457,7 +476,7 @@ int main(void)
                             sum3 += 1.0;
                         else if (maleT[i][j] == 2 && maleP[i][j] == 2)
                             sum4 += 1.0;
-                        calc_pair(sum_pair,i,j,maleT,maleP);
+                        calc_pair(sum_pair, i, j, maleT, maleP);
                     }
                 }
                 // fprintf(data7, "%d\t%lf\t%lf\t%lf\t%lf\n", 0,(double)sum1/(double)(LH*LV),(double)sum2/(double)(LH*LV),\
@@ -477,15 +496,17 @@ int main(void)
                 buffer[buf_count].initT2P1 = initT2P1;
                 buf_count++;
 
-                Pair[pair_count].t=0;
-                Pair[pair_count].x11=sum_pair[0]/((double)4.0*sum1);
-                Pair[pair_count].x21=sum_pair[1]/((double)4.0*sum1);
-                Pair[pair_count].x31=sum_pair[2]/((double)4.0*sum1);
-                Pair[pair_count].x22=sum_pair[3]/((double)4.0*sum3);
-                Pair[pair_count].x32=sum_pair[4]/((double)4.0*sum3);
-                Pair[pair_count].x33=sum_pair[5]/((double)4.0*sum4);
-                Pair[pair_count].initT2P1=initT2P1;
-                pair_count++;   
+                Pair[pair_count].t = 0;
+                Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                Pair[pair_count].initT2P1 = initT2P1;
+                pair_count++;
+                for (i = 0; i < 6; i++)
+                    sum_pair[i] = 0.0;
 
 // --- 追加: dummy 配列を初期化（未書き込み領域を防ぐ） ---
 #pragma omp parallel for collapse(2) schedule(static) default(none) shared(maleT, maleP, femaleT, femaleP,                         \
@@ -700,7 +721,7 @@ int main(void)
                                 sum3 += 1;
                             else if ((maleT[i][j] == 2 && maleP[i][j] == 2))
                                 sum4 += 1;
-                            calc_pair(sum_pair,i,j,maleT,maleP);
+                            calc_pair(sum_pair, i, j, maleT, maleP);
                         }
                     }
                     genorepo[geno_count].t = t;
@@ -710,15 +731,17 @@ int main(void)
                     genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
                     geno_count++;
 
-                    Pair[pair_count].t=t;
-                    Pair[pair_count].x11=sum_pair[0]/((double)4.0*sum1);
-                    Pair[pair_count].x21=sum_pair[1]/((double)4.0*sum1);
-                    Pair[pair_count].x31=sum_pair[2]/((double)4.0*sum1);
-                    Pair[pair_count].x22=sum_pair[3]/((double)4.0*sum3);
-                    Pair[pair_count].x32=sum_pair[4]/((double)4.0*sum3);
-                    Pair[pair_count].x33=sum_pair[5]/((double)4.0*sum4);
-                    Pair[pair_count].initT2P1=initT2P1;
+                    Pair[pair_count].t = t;
+                    Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                    Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                    Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                    Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                    Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                    Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    Pair[pair_count].initT2P1 = initT2P1;
                     pair_count++;
+                    for (i = 0; i < 6; i++)
+                        sum_pair[i] = 0.0;
 
                     if (t % 10 == 0)
                     {
@@ -753,13 +776,12 @@ int main(void)
         data4 = fopen(data_file4, "w");
         for (int n = 0; n < pair_count; n++)
         {
-            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n",
-                    Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,\
-                     Pair[n].x32, Pair[n].x33, Pair[n].initT2P1);
+            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+                    Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,
+                    Pair[n].x32, Pair[n].x33, Pair[n].initT2P1);
         }
         fclose(data4);
 
-        printf("Ok\n");
         // T1P1-T2P2-T2P1図
         // data_file3 = malloc(100);
         // sprintf(data_file3, "Two_env_2dime_final_T2P2_K_%f.dat", K);
@@ -839,7 +861,43 @@ int main(void)
         //     pclose(gp);
         // }
 
-        //pairのグラフ
+        // pairのグラフ
+        gp = fopen(data_file4, "r");
+        data6 = fopen(data_file6, "w");
+        while (fscanf(gp, "%d %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &init) == 6)
+        {
+            if (x1 == (tend))
+            {
+
+                fprintf(data3, "%d\t%f\t%f\t%f\t%f\t%f\t%f\n", x1, x11, x21, x31, x22, x32, x33);
+            }
+        }
+        fclose(data6);
+        fclose(gp);
+
+        data4 = fopen(data_file4, "r");
+        data5 = fopen(data_file5, "w");
+        if (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &init) != 8)
+            return 1;
+        while (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf", &x2, &nx11, &nx21, &nx31, &nx22, &nx32, &nx33, &init1) == 8)
+        {
+            if (fabs(init - init1) < 1e-12)
+            {
+                fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+                        x11, x21, x31, x22, x32, x33, nx11, nx21, nx31, nx22, nx32, nx33);
+            }
+            x1 = x2;
+            x11 = nx11;
+            x21 = nx21;
+            x31 = nx31;
+            x22 = nx22;
+            x32 = nx32;
+            x33 = nx33;
+            init = init1;
+        }
+        fclose(data4);
+        fclose(data5);
+
         for (i = 1; i <= 4; i++)
         {
             initT2P1 = (double)0.2 * i;
@@ -849,7 +907,7 @@ int main(void)
             fprintf(gp, "set xrange [0:%d]\n", tend);
             fprintf(gp, "set xlabel 't'\n");
             fprintf(gp, "set yrange [0:%f]\n", 1.0);
-            fprintf(gp, "set ylabel 'genotype_frequency'\n");
+            fprintf(gp, "set ylabel 'pair_frequency'\n");
             fprintf(gp, "titles='x_1/1 x_2/1 x_3/1 x_2/2 x_3/2 x_3/3'\n");
             fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
             fprintf(gp, "set style line 2 lc rgb \"#00CC00\" lw 2\n");
