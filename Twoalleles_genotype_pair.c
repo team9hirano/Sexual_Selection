@@ -237,7 +237,7 @@ int main(void)
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
     char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6, *data_file7;
     char *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
-    char Figaxis[9]={"x_11","x_21","x_31","x_22","x_32","x_33","T1P1","T2P1","T2P2"};
+    char *Figaxis[9] = {"x_11", "x_21", "x_31", "x_22", "x_32", "x_33", "T1P1", "T2P1", "T2P2"};
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     // data1(T2P2頻度図の書き込み用)
@@ -299,7 +299,7 @@ int main(void)
     {
         // K=(double)(iK*2-1)*0.00;
         // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = 0.02 + (double)iK * 0.01;
+        K = 0.03 + (double)iK * 0.01;
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
@@ -777,10 +777,10 @@ int main(void)
         data4 = fopen(data_file4, "w");
         for (int n = 0; n < pair_count; n++)
         {
-            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
                     Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,
-                    Pair[n].x32, Pair[n].x33, Pair[n].initT2P1,\
-                    genorepo[n].sum1, genorepo[n].sum2, genorepo[n].sum3, genorepo[n].sum4);
+                    Pair[n].x32, Pair[n].x33,
+                    genorepo[n].sum1, genorepo[n].sum3, genorepo[n].sum4, Pair[n].initT2P1);
         }
         fclose(data4);
 
@@ -866,12 +866,12 @@ int main(void)
         // pairのグラフ
         gp = fopen(data_file4, "r");
         data6 = fopen(data_file6, "w");
-        while (fscanf(gp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &init,&sum1,&sum2,&sum3,&sum4) == 12)
+        while (fscanf(gp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &sum1, &sum3, &sum4, &init) == 11)
         {
             if (x1 == (tend))
             {
 
-                fprintf(data3, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", x1, x11, x21, x31, x22, x32, x33,sum1,sum2,sum3,sum4);
+                fprintf(data6, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", x1, x11, x21, x31, x22, x32, x33, sum1, sum3, sum4);
             }
         }
         fclose(data6);
@@ -879,47 +879,60 @@ int main(void)
 
         data4 = fopen(data_file4, "r");
         data5 = fopen(data_file5, "w");
-        if (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &init,&sum1,&sum2,&sum3,&sum4) != 12)
+        if (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x1, &x11, &x21, &x31, &x22, &x32, &x33, &sum1, &sum3, &sum4, &init) != 11)
             return 1;
-        while (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf", &x2, &nx11, &nx21, &nx31, &nx22, &nx32, &nx33, &init1,&gsum1,&gsum2,&gsum3,&gsum4) == 12)
+        while (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x2, &nx11, &nx21, &nx31, &nx22, &nx32, &nx33, &gsum1, &gsum3, &gsum4, &init1) == 11)
         {
             if (fabs(init - init1) < 1e-12)
             {
-                fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
-                        x11, x21, x31, x22, x32, x33,\
-                        sum1,sum2,sum3,sum4,\
-                         nx11, nx21, nx31, nx22, nx32, nx33\
-                        , gsum1, gsum2, gsum3, gsum4);
+                fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\
+                    \t%lf\t%lf\t%lf\
+                    \t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\
+                    \t%lf\t%lf\t%lf\n",
+                        x11, x21, x31, x22, x32, x33,
+                        sum1, sum3, sum4,
+                        nx11, nx21, nx31, nx22, nx32, nx33,
+                        gsum1, gsum3, gsum4);
             }
             x1 = x2;
-            x11 = nx11;x21 = nx21;
-            x31 = nx31;x22 = nx22;
-            x32 = nx32;x33 = nx33;
-            sum1 = gsum1;sum2 = gsum2;
-            sum3 = gsum3;sum4 = gsum4;
+            x11 = nx11;
+            x21 = nx21;
+            x31 = nx31;
+            x22 = nx22;
+            x32 = nx32;
+            x33 = nx33;
+            sum1 = gsum1;
+
+            sum3 = gsum3;
+            sum4 = gsum4;
             init = init1;
         }
         fclose(data4);
         fclose(data5);
 
-        for(i=0;i<9;i++){
-            for(j=i;j<9;j++){
+        for (i = 0; i < 9; i++)
+        {
+            for (j = i + 1; j < 9; j++)
+            {
                 gp = popen("gnuplot -persist", "w");
                 fprintf(gp, "set terminal png\n");
                 fprintf(gp, "set term pngcairo size 1000,700\n");
-                fprintf(gp, "set output 'Genotype_Twoalleles_pair/K_%f_a1_%f_%s_%s.png'\n", K, a1,Figaxis[i],Figaxis[j]);
+                fprintf(gp, "set output 'Genotype_Twoalleles_pair/K_%f_a1_%f_%s_%s.png'\n", K, a1, Figaxis[i], Figaxis[j]);
                 fprintf(gp, "set xrange [0:%f]\n", 1.0);
-                fprintf(gp, "set xlabel %s\n",Figaxis[i]);
+                fprintf(gp, "set xlabel \'%s\'\n", Figaxis[i]);
                 fprintf(gp, "set yrange [0:%f]\n", 1.0);
-                fprintf(gp, "set ylabel %s\n",Figaxis[j]);
-                fprintf(gp, "plot \'%s\' using %d:%d with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\
+                fprintf(gp, "set ylabel \'%s\'\n", Figaxis[j]);
+                fprintf(gp, "plot \'%s\' using %d:%d with points pointtype 7 lc rgb 'blue' title \
+                    \"survivalrateK=%f\",\
                     \'%s\' using %d:%d:($%d-$%d):($%d-$%d) with vectors head filled lc rgb 'blue',\
-                    \'%s\' using %d:%d with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n",\
-                     data_file4,i+2,j+2, K, data_file5,i+1,j+1,i+10,j+10, data_file6,i+2,j+2);
+                    \'%s\' using %d:%d with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n",
+                        data_file4, i + 2, j + 2,
+                        K,
+                        data_file5, i + 1, j + 1, i + 10, i + 1, j + 10, j + 1,
+                        data_file6, i + 2, j + 2);
                 pclose(gp);
             }
         }
-
 
         for (i = 1; i <= 4; i++)
         {
