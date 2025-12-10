@@ -885,14 +885,8 @@ int main(void)
         {
             if (fabs(init - init1) < 1e-12)
             {
-                fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\
-                    \t%lf\t%lf\t%lf\
-                    \t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\
-                    \t%lf\t%lf\t%lf\n",
-                        x11, x21, x31, x22, x32, x33,
-                        sum1, sum3, sum4,
-                        nx11, nx21, nx31, nx22, nx32, nx33,
-                        gsum1, gsum3, gsum4);
+                fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+                        x11, x21, x31, x22, x32, x33, sum1, sum3, sum4, nx11, nx21, nx31, nx22, nx32, nx33, gsum1, gsum3, gsum4);
             }
             x1 = x2;
             x11 = nx11;
