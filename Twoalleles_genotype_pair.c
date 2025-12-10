@@ -733,6 +733,22 @@ int main(void)
                     geno_count++;
 
                     Pair[pair_count].t = t;
+                    if (sum1 == 0)
+                    {
+                        Pair[pair_count].x11 = 0.0;
+                        Pair[pair_count].x21 = 0.0;
+                        Pair[pair_count].x31 = 0.0;
+                    }
+                    if (sum3 == 0)
+                    {
+                        Pair[pair_count].x22 = 0.0;
+                        Pair[pair_count].x32 = 0.0;
+                    }
+                    if (sum4 == 0)
+                    {
+                        Pair[pair_count].x33 = 0.0;
+                    }
+
                     Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
                     Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
                     Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
@@ -777,7 +793,7 @@ int main(void)
         data4 = fopen(data_file4, "w");
         for (int n = 0; n < pair_count; n++)
         {
-            fprintf(data4, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+            fprintf(data4, "%d\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\n",
                     Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,
                     Pair[n].x32, Pair[n].x33,
                     genorepo[n].sum1, genorepo[n].sum3, genorepo[n].sum4, Pair[n].initT2P1);
@@ -806,7 +822,7 @@ int main(void)
             return 1;
         while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x2, &geno1, &geno2, &geno3, &geno4, &init1) == 6)
         {
-            if (fabs(init - init1) < 1e-12)
+            if (fabs(init - init1) < 1e-9)
             {
                 fprintf(data2, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", gen1, gen3, gen4, geno1, geno3, geno4);
             }
@@ -883,7 +899,7 @@ int main(void)
             return 1;
         while (fscanf(data4, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &x2, &nx11, &nx21, &nx31, &nx22, &nx32, &nx33, &gsum1, &gsum3, &gsum4, &init1) == 11)
         {
-            if (fabs(init - init1) < 1e-12)
+            if (fabs(init - init1) < 1e-9)
             {
                 fprintf(data5, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
                         x11, x21, x31, x22, x32, x33, sum1, sum3, sum4, nx11, nx21, nx31, nx22, nx32, nx33, gsum1, gsum3, gsum4);
