@@ -18,7 +18,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 #define a1 3.0 // P2メスがT2オスを選好する倍率3.0
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 70000 // 4000 80000 10000
+#define tend 50000 // 4000 80000 30000
 #define mapinitP 0.3
 #define initialP 3
 #define initialT 1
@@ -233,9 +233,9 @@ int main(void)
     double x11, x21, x22, x31, x32, x33;
     double nx11, nx21, nx22, nx31, nx32, nx33;
     int maleT0, maleP0, femaleT0, femaleP0, mgenotype, fgenotype, count;
-    FILE *gp, *data1, *data2, *data3, *data4, *data5, *data6, *data7;
+    FILE *gp, *data1, *data2, *data3, *data4, *data5, *data6, *data7, *data8;
     FILE *snapshot1, *snapshot2, *snapshot3, *snapshot4, *snapshot5, *snapshot6;
-    char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6, *data_file7;
+    char *data_file1, *data_file2, *data_file3, *data_file4, *data_file5, *data_file6, *data_file7, *data_file8;
     char *snapshot_file1, *snapshot_file2, *snapshot_file3, *snapshot_file4, *snapshot_file5, *snapshot_file6;
     char *Figaxis[9] = {"x_11", "x_21", "x_31", "x_22", "x_32", "x_33", "T1P1", "T2P1", "T2P2"};
     struct timespec start, end;
@@ -274,8 +274,10 @@ int main(void)
         int t;
         double x11, x21, x22, x31, x32, x33, initT2P1;
     } Localpair;
-    Localpair *Pair = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+    Localpair *Pair = malloc(sizeof(Localpair) * 9 * (tend + 1));
     int pair_count = 0;
+    Localpair *Pair_freq = malloc(sizeof(Localpair) * 9 * (tend + 1));
+    int freq_count = 0;
 
     //"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
     int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
@@ -295,11 +297,11 @@ int main(void)
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
 
-    for (iK = 0; iK <= 0; iK++)
+    for (iK = 4; iK <= 17; iK++)
     {
         // K=(double)(iK*2-1)*0.00;
         // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = 0.03 + (double)iK * 0.01;
+        K = (double)iK * 0.01; // K=0.04~0.17まで0.01刻み
         printf("K:%f\n", K);
         maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
@@ -358,11 +360,15 @@ int main(void)
         data_file7 = malloc(100);
         sprintf(data_file7, "Two_env_genoport_K_%f.dat", K);
 
+        data_file8 = malloc(100);
+        sprintf(data_file8, "Two_env_2dime_pair_full_K_%f.dat", K);
+
         snapshot_file2 = malloc(100);
 
         buf_count = 0;
         geno_count = 0;
         pair_count = 0;
+        freq_count = 0;
         for (k = 1; k <= 1; k++)
         {
             // initT2 = 0.1 * initialT;
@@ -506,6 +512,16 @@ int main(void)
                 Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
                 Pair[pair_count].initT2P1 = initT2P1;
                 pair_count++;
+
+                Pair_freq[freq_count].t = 0;
+                Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                Pair_freq[freq_count].initT2P1 = initT2P1;
+                freq_count++;
                 for (i = 0; i < 6; i++)
                     sum_pair[i] = 0.0;
 
@@ -732,36 +748,34 @@ int main(void)
                     genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
                     geno_count++;
 
-                    Pair[pair_count].t = t;
-                    if (sum1 == 0)
+                    if (t % 100 == 0)
                     {
-                        Pair[pair_count].x11 = 0.0;
-                        Pair[pair_count].x21 = 0.0;
-                        Pair[pair_count].x31 = 0.0;
-                    }
-                    if (sum3 == 0)
-                    {
-                        Pair[pair_count].x22 = 0.0;
-                        Pair[pair_count].x32 = 0.0;
-                    }
-                    if (sum4 == 0)
-                    {
-                        Pair[pair_count].x33 = 0.0;
-                    }
+                        Pair[pair_count].t = t;
+                        if (sum1 == 0)
+                        {
+                            Pair[pair_count].x11 = 0.0;
+                            Pair[pair_count].x21 = 0.0;
+                            Pair[pair_count].x31 = 0.0;
+                        }
+                        if (sum3 == 0)
+                        {
+                            Pair[pair_count].x22 = 0.0;
+                            Pair[pair_count].x32 = 0.0;
+                        }
+                        if (sum4 == 0)
+                        {
+                            Pair[pair_count].x33 = 0.0;
+                        }
 
-                    Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                    Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
-                    Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
-                    Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
-                    Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
-                    Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
-                    Pair[pair_count].initT2P1 = initT2P1;
-                    pair_count++;
-                    for (i = 0; i < 6; i++)
-                        sum_pair[i] = 0.0;
+                        Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                        Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                        Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                        Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                        Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                        Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                        Pair[pair_count].initT2P1 = initT2P1;
+                        pair_count++;
 
-                    if (t % 10 == 0)
-                    {
                         buffer[buf_count].t = t;
                         buffer[buf_count].geno1 = (double)sum1 / (double)(LH * LV);
                         buffer[buf_count].geno2 = (double)sum2 / (double)(LH * LV);
@@ -770,6 +784,33 @@ int main(void)
                         buffer[buf_count].initT2P1 = initT2P1;
                         buf_count++;
                     }
+                    Pair_freq[freq_count].t = t;
+                    if (sum1 == 0)
+                    {
+                        Pair_freq[freq_count].x11 = 0.0;
+                        Pair_freq[freq_count].x21 = 0.0;
+                        Pair_freq[freq_count].x31 = 0.0;
+                    }
+                    if (sum3 == 0)
+                    {
+                        Pair_freq[freq_count].x22 = 0.0;
+                        Pair_freq[freq_count].x32 = 0.0;
+                    }
+                    if (sum4 == 0)
+                    {
+                        Pair_freq[freq_count].x33 = 0.0;
+                    }
+
+                    Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                    Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                    Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                    Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                    Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                    Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    Pair_freq[freq_count].initT2P1 = initT2P1;
+                    freq_count++;
+                    for (i = 0; i < 6; i++)
+                        sum_pair[i] = 0.0;
                 }
             }
         }
@@ -796,9 +837,20 @@ int main(void)
             fprintf(data4, "%d\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\n",
                     Pair[n].t, Pair[n].x11, Pair[n].x21, Pair[n].x31, Pair[n].x22,
                     Pair[n].x32, Pair[n].x33,
-                    genorepo[n].sum1, genorepo[n].sum3, genorepo[n].sum4, Pair[n].initT2P1);
+                    buffer[n].geno1, buffer[n].geno3, buffer[n].geno4, Pair[n].initT2P1);
         }
         fclose(data4);
+
+        data8 = fopen(data_file8, "w");
+        for (int n = 0; n < freq_count; n++)
+        {
+            fprintf(data8, "%d\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\t%.15g\n",
+                    Pair_freq[n].t, Pair_freq[n].x11, Pair_freq[n].x21,
+                    Pair_freq[n].x31, Pair_freq[n].x22,
+                    Pair_freq[n].x32, Pair_freq[n].x33,
+                    Pair_freq[n].initT2P1);
+        }
+        fclose(data8);
 
         // T1P1-T2P2-T2P1図
         data_file3 = malloc(100);
@@ -807,7 +859,7 @@ int main(void)
         data3 = fopen(data_file3, "w");
         while (fscanf(gp, "%d %lf %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4, &init) == 6)
         {
-            if (x1 == (tend - 10))
+            if (x1 == (tend))
             {
 
                 fprintf(data3, "%d\t%f\t%f\t%f\t%f\n", x1, gen1, gen2, gen3, gen4);
@@ -848,7 +900,7 @@ int main(void)
         // fprintf(gp, "plot \'%s\' using 2:4 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:2:($4-$1):($5-$2) with vectors head filled lc rgb 'blue',\'%s\' using 2:4 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
         // pclose(gp);
 
-        // // T1P1-T2P2図
+        // // // T1P1-T2P2図
         // gp = popen("gnuplot -persist", "w");
         // fprintf(gp, "set terminal png\n");
         // fprintf(gp, "set term pngcairo size 1000,700\n");
@@ -860,12 +912,13 @@ int main(void)
         // fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
         // pclose(gp);
 
-        // for (i = 1; i <= 9; i++)
+        // for (i = 1; i <= 4; i++) // k2=1; k2<=9; k2++
         // {
-        //     initT2P1 = (double)0.1 * i;
+
+        //     initT2P1 = 0.1 * 2.0 * (double)i;
         //     gp = popen("gnuplot -persist", "w");
         //     fprintf(gp, "set terminal png\n");
-        //     fprintf(gp, "set output 'Genotype_twoalleles_genoport/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
+        //     fprintf(gp, "set output 'Genotype_twoalleles_genoport/Two_env_genoport_K_%f_a1_%f_LH_%d_initT2P1_%f.png'\n", K, a1, LH, initT2P1);
         //     fprintf(gp, "set xrange [0:%d]\n", tend);
         //     fprintf(gp, "set xlabel 't'\n");
         //     fprintf(gp, "set yrange [0:%f]\n", 1.0);
@@ -920,29 +973,30 @@ int main(void)
         fclose(data4);
         fclose(data5);
 
-        for (i = 0; i < 9; i++)
-        {
-            for (j = i + 1; j < 9; j++)
-            {
-                gp = popen("gnuplot -persist", "w");
-                fprintf(gp, "set terminal png\n");
-                fprintf(gp, "set term pngcairo size 1000,700\n");
-                fprintf(gp, "set output 'Genotype_Twoalleles_pair/K_%f_a1_%f_%s_%s.png'\n", K, a1, Figaxis[i], Figaxis[j]);
-                fprintf(gp, "set xrange [0:%f]\n", 1.0);
-                fprintf(gp, "set xlabel \'%s\'\n", Figaxis[i]);
-                fprintf(gp, "set yrange [0:%f]\n", 1.0);
-                fprintf(gp, "set ylabel \'%s\'\n", Figaxis[j]);
-                fprintf(gp, "plot \'%s\' using %d:%d with points pointtype 7 lc rgb 'blue' title \
-                    \"survivalrateK=%f\",\
-                    \'%s\' using %d:%d:($%d-$%d):($%d-$%d) with vectors head filled lc rgb 'blue',\
-                    \'%s\' using %d:%d with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n",
-                        data_file4, i + 2, j + 2,
-                        K,
-                        data_file5, i + 1, j + 1, i + 10, i + 1, j + 10, j + 1,
-                        data_file6, i + 2, j + 2);
-                pclose(gp);
-            }
-        }
+        // 12/14 2:50　図はmathemathicaでいいかなと思いdatファイルだけ出すわ
+        //  for (i = 0; i < 9; i++)
+        //  {
+        //      for (j = i + 1; j < 9; j++)
+        //      {
+        //          gp = popen("gnuplot -persist", "w");
+        //          fprintf(gp, "set terminal png\n");
+        //          fprintf(gp, "set term pngcairo size 1000,700\n");
+        //          fprintf(gp, "set output 'Genotype_Twoalleles_pair/K_%f_a1_%f_%s_%s.png'\n", K, a1, Figaxis[i], Figaxis[j]);
+        //          fprintf(gp, "set xrange [0:%f]\n", 1.0);
+        //          fprintf(gp, "set xlabel \'%s\'\n", Figaxis[i]);
+        //          fprintf(gp, "set yrange [0:%f]\n", 1.0);
+        //          fprintf(gp, "set ylabel \'%s\'\n", Figaxis[j]);
+        //          fprintf(gp, "plot \'%s\' using %d:%d with points pointtype 7 lc rgb 'blue' title \
+        //              \"survivalrateK=%f\",\
+        //              \'%s\' using %d:%d:($%d-$%d):($%d-$%d) with vectors head filled lc rgb 'blue',\
+        //              \'%s\' using %d:%d with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n",
+        //                  data_file4, i + 2, j + 2,
+        //                  K,
+        //                  data_file5, i + 1, j + 1, i + 10, i + 1, j + 10, j + 1,
+        //                  data_file6, i + 2, j + 2);
+        //          pclose(gp);
+        //      }
+        //  }
 
         for (i = 1; i <= 4; i++)
         {
@@ -961,7 +1015,7 @@ int main(void)
             fprintf(gp, "set style line 4 lc rgb \"#FF0000\" lw 2\n");
             fprintf(gp, "set style line 5 lc rgb \"#FF00FF\" lw 2\n");
             fprintf(gp, "set style line 6 lc rgb \"#000000\" lw 2\n");
-            fprintf(gp, "plot for [j=2:7] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file4, (i - 1) * (tend + 1), i * (tend + 1) - 1);
+            fprintf(gp, "plot for [j=2:7] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file8, (i - 1) * (tend + 1), i * (tend + 1) - 1);
             pclose(gp);
         }
 
@@ -987,7 +1041,11 @@ int main(void)
         free(data_file1);
         free(data_file2);
         free(data_file3);
+        free(data_file4);
+        free(data_file5);
+        free(data_file6);
         free(data_file7);
+        free(data_file8);
     }
     free(buffer);
     free(genorepo);
