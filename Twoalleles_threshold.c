@@ -9,8 +9,8 @@
 #include <time.h>
 #include "MT.h"
 
-#define LH 100 // 1000
-#define LV 100 // 1000
+#define LH 1000// 1000
+#define LV 1000// 1000
 // #define K 0.075 //P3メスのコスト
 // #define V 0.074 //P2メスのコスト(0<V<K)
 // #define u 0.3 // T3オスのコスト0.3
@@ -311,9 +311,10 @@ int main(void)
     // 閾値記述
     typedef struct
     {
-        double k, s1, s2;
+        int situ;
+        double k,u,gen1,gen2,gen3,gen4;
     } Threshold;
-    Threshold *Threshold1 = malloc(sizeof(Threshold) * 10);
+    Threshold *Threshold1 = malloc(sizeof(Threshold) * 170);
     int Threshold_count = 0;
     //"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
     int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
@@ -332,7 +333,7 @@ int main(void)
     omp_set_num_threads(num_threads);
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
-    data_file9 = "Twoalleles_threshold_result.dat";
+    data_file9 = "Twoalleles_threshold_result_Rogistic.csv";
 
     for (iK = 0; iK <= 7; iK++)
     {
@@ -360,137 +361,179 @@ int main(void)
         situ = 0;
         printf("K:%f\n", K);
         count = 0;
-        for (iu = 0; iu <= 100; iu++)
+        for (iu = 0; iu <= 20; iu++)
         {
-            printf("更新前 iu:%d,u:%f,curs1:%f,curs2:%f,curs3:%f,count:%dsitu:%d\n",
-                   iu, u, curs1, curs2, curs3, count, situ);
+            u=0.0+(double)iu*0.025;
+            // printf("更新前 iu:%d,u:%f,curs1:%f,curs2:%f,curs3:%f,count:%dsitu:%d\n",
+            //        iu, u, curs1, curs2, curs3, count, situ);
 
-            if (count == 0)
-            {
-                if (iu == 0)
-                { // 一番最初
-                    u = 0.0;
-                }
-                else if (iu == 1 && situ == 2)
-                { // U=0で共存で終了
-                    s1 = 0.0;
-                    curs1 = 0.0;
-                    curs2 = 0.0;
-                    count = 1;
-                    situ = 0;
-                    continue;
-                }
-                else if (iu == 1 && situ == 3)
-                { // U=0で絶滅(T1P1のみ)で終了
-                    s1 = 0.0;
-                    s2 = 0.0;
-                    curs1 = curs2 = 0.0;
-                    curs3 = 0.0;
-                    count = 1;
-                    situ = 0;
-                    continue;
-                }
+            // if (count == 0)
+            // {
+            //     if (iu == 0)
+            //     { // 一番最初
+            //         u = 0.0;
+            //     }
+            //     else if(iu>8){
+            //         s1=curs1;
+            //         count=1;
+            //         situ=0;
+            //         continue;
+            //     }
+            //     else if (iu == 1 && situ == 2)
+            //     { // U=0で共存で終了
+            //         s1 = 0.0;
+            //         curs1 = 0.0;
+            //         curs2 = 0.0;
+            //         count = 1;
+            //         situ = 0;
+            //         continue;
+            //     }
+            //     else if (iu == 1 && situ == 3)
+            //     { // U=0で絶滅(T1P1のみ)で終了
+            //         s1 = 0.0;
+            //         s2 = 0.0;
+            //         curs1 = curs2 = 0.0;
+            //         curs3 = 0.0;
+            //         count = 1;
+            //         situ = 0;
+            //         continue;
+            //     }
 
-                else if (fabs(curs1 - k_max) < 0.00001 && fabs(curs2 - 2.0) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
-                { // １回も共存していないため共存状態を探す
-                    s1 = k_max;
-                    s2 = k_max;
-                    curs1 = k_max;
-                    curs2 = k_max;
-                    curs3 = k_max;
-                    count = 1;
-                    situ = 0;
-                    continue;
-                }
-                else if (situ == 1 && fabs(curs2 - 2.0) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
-                { // １回も共存していないため共存状態を探す
+            //     else if (fabs(curs1 - k_max) < 0.00001 && fabs(curs2 - 2.0) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
+            //     { // １回も共存していないため共存状態を探す
+            //         s1 = k_max;
+            //         s2 = k_max;
+            //         curs1 = k_max;
+            //         curs2 = k_max;
+            //         curs3 = k_max;
+            //         count = 1;
+            //         situ = 0;
+            //         continue;
+            //     }
+            //     else if (situ == 1 && fabs(curs2 - 2.0) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
+            //     { // １回も共存していないため共存状態を探す
 
-                    curs1 = u;
-                    u = u + 0.5;
-                    if (u > k_max)
-                        u = k_max;
-                }
+            //         curs1 = u;
+            //         u = u + 0.5;
+            //         if (u > k_max)
+            //             u = k_max;
+            //     }
 
-                else if (fabs(curs2 - curs1) < 0.01)
-                { // 十分に近づいた場合閾値発見で終了
-                    s1 = curs1;
+            //     else if (fabs(curs2 - curs1) < 0.01)
+            //     { // 十分に近づいた場合閾値発見で終了
+            //         s1 = curs1;
 
-                    count = 1;
-                    situ = 0;
-                    continue;
-                }
+            //         count = 1;
+            //         situ = 0;
+            //         continue;
+            //     }
+            //     else if (fabs(curs3 - curs1) < 0.01&& fabs(curs2 - 2.0) < 0.00001)
+            //     { // 十分に近づいた場合閾値発見で終了
+            //         s1 = curs1;
+            //         s2=curs1;
 
-                else if (situ == 1)
-                { // uではT2P1orT2P2のみである場合
-                    curs1 = u;
-                    u = (curs1 + curs2) / 2.0;
-                }
-                else if (situ == 2)
-                { // uで共存の場合
-                    curs2 = u;
-                    u = (curs1 + curs2) / 2.0;
-                }
-                else if (situ == 3)
-                { // uで絶滅である場合
-                    curs3 = u;
-                    u = (curs1 + u) / 2.0;
-                }
-            }
-            else if (count == 1)
-            {
+            //         count = 1;
+            //         situ = 0;
+            //         continue;
+            //     }
 
-                if ((fabs(s1 - 0.0) < 0.00001 && fabs(s2 - 0.0) < 0.00001) || (fabs(s1 - 1.0) < 0.00001 && fabs(s2 - 1.0) < 0.00001))
-                { // 絶滅閾値発見で終了
-                    count = 2;
-                    break;
-                }
-                else if (fabs(curs2 - k_max) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
-                { // 共存状態がなかったので終了
-                    s2 = k_max;
-                    curs3 = 1.0;
-                    count = 2;
-                    break;
-                }
+            //     else if (fabs(curs2 - 2.0) < 0.00001 && situ == 1)
+            //     { // uではT2P1orT2P2のみである場合
+            //         curs1 = u;
+            //         u = (curs1 + curs3) / 2.0;
+            //     }
+            //     else if(situ==1){
+            //         curs1 = u;
+            //         u = (curs1 + curs2) / 2.0;
+            //     }
+            //     else if (situ == 2)
+            //     { // uで共存の場合
+            //         curs2 = u;
+            //         u = (curs1 + curs2) / 2.0;
+            //     }
+            //     else if (situ == 3)
+            //     { // uで絶滅である場合
+            //         curs3 = u;
+            //         u = (curs1 + u) / 2.0;
+            //     }
+            // }
+            // else if (count == 1)
+            // {
 
-                else if (situ == 2 && fabs(curs3 - 2.0) < 0.00001)
-                { // u=1.0で共存で終了
-                    curs2 = u;
-                    u = u + 0.5;
-                    if (u > k_max)
-                        u = k_max;
-                }
-                else if (situ == 0 && fabs(curs3 - 2.0) < 0.00001)
-                { // u=1.0で共存で終了
-                    u = k_max;
-                }
+            //     if ((fabs(s1 - 0.0) < 0.00001 && fabs(s2 - 0.0) < 0.00001) || (fabs(s1 - 1.0) < 0.00001 && fabs(s2 - 1.0) < 0.00001))
+            //     { // 絶滅閾値発見で終了
+            //         count = 2;
+            //         break;
+            //     }
+            //     else if(iu>16){
+            //         s2=curs2;
+            //         if(fabs(curs2-2.0)<0.00001){
+            //             s2=curs3;
+            //             break;
+            //         }
+            //         count=2;
+            //         break;
+            //     }
+            //     else if(fabs(s1 - s2) < 0.00001 ){
+            //         count = 2;
+            //         break;
+            //     }
+            //     else if (fabs(curs2 - k_max) < 0.00001 && fabs(curs3 - 2.0) < 0.00001)
+            //     { // 共存状態がなかったので終了
+            //         s2 = k_max;
+            //         curs3 = 1.0;
+            //         count = 2;
+            //         break;
+            //     }
 
-                else if (fabs(curs3 - curs2) < 0.01)
-                { // 十分に近づいた場合閾値発見で終了
-                    s2 = curs3;
+            //     else if (situ == 2 && fabs(curs3 - 2.0) < 0.00001)
+            //     { // u=1.0で共存で終了
+            //         curs2 = u;
+            //         u = u + 0.5;
+            //         if (u > k_max)
+            //             u = k_max;
+            //     }
+            //     else if (situ == 0 && fabs(curs3 - 2.0) < 0.00001)
+            //     { // u=1.0で共存で終了
+            //         u = k_max;
+            //     }
+            //     else if(situ==0){
+            //         if(curs3<curs2){
+            //             s2=curs2;
+            //             count=2;
+            //             break;
+            //         }else{
+            //             u = (curs2 + curs3) / 2.0;
+            //         }
+            //     }
 
-                    count = 2;
-                    break;
-                }
+            //     else if (fabs(curs3 - curs2) < 0.01)
+            //     { // 十分に近づいた場合閾値発見で終了
+            //         s2 = curs3;
 
-                else if (situ == 3)
-                { // uで絶滅の場合
-                    curs3 = u;
-                    u = (curs2 + curs3) / 2.0;
-                }
-                else if (situ == 2)
-                { // uで共存の場合
-                    curs2 = u;
-                    u = (curs2 + curs3) / 2.0;
-                }
-                else if (situ == 1)
-                {
-                    s2 = curs2;
-                    count = 2;
-                    break;
-                }
-            }
-            printf("更新後 iu:%d,u:%f,curs1:%f,curs2:%f,curs3:%f,count:%dsitu:%d\n",
-                   iu, u, curs1, curs2, curs3, count, situ);
+            //         count = 2;
+            //         break;
+            //     }
+
+            //     else if (situ == 3)
+            //     { // uで絶滅の場合
+            //         curs3 = u;
+            //         u = (curs2 + curs3) / 2.0;
+            //     }
+            //     else if (situ == 2)
+            //     { // uで共存の場合
+            //         curs2 = u;
+            //         u = (curs2 + curs3) / 2.0;
+            //     }
+            //     else if (situ == 1)
+            //     {
+            //         s2 = curs2;
+            //         count = 2;
+            //         break;
+            //     }
+            // }
+            // printf("更新後 iu:%d,u:%f,curs1:%f,curs2:%f,curs3:%f,count:%dsitu:%d\n",
+            //        iu, u, curs1, curs2, curs3, count, situ);
             //  u=0.3+(double)iu*0.1;
 
             init_genrand(0);
@@ -525,12 +568,13 @@ int main(void)
             data_file8 = malloc(100);
             sprintf(data_file8, "Two_env_2dime_pair_full_K_%f_u_%f.dat", K, u);
 
-            snapshot_file2 = malloc(100);
+            // snapshot_file2 = malloc(100);
 
             buf_count = 0;
             geno_count = 0;
             pair_count = 0;
             freq_count = 0;
+            // Threshold_count = 0;
             for (k = 1; k <= 1; k++)
             {
                 // initT2 = 0.1 * initialT;
@@ -844,47 +888,47 @@ int main(void)
 
                         // 途中の図
                         // 途中の図
-                        if (t % 100 == 0 && fabs(initT2P1 - mapinitP) < 1e-9 && t < 40000)
-                        {
-                            sprintf(snapshot_file2, "Two_intmap_t_%d_K_%f_u_%f_initT2P1_%g.dat", t, K, u, initT2P1);
+                        // if (t % 100 == 0 && fabs(initT2P1 - mapinitP) < 1e-9 && t < 40000)
+                        // {
+                        //     sprintf(snapshot_file2, "Two_intmap_t_%d_K_%f_u_%f_initT2P1_%g.dat", t, K, u, initT2P1);
 
-                            mgenotype = fgenotype = 0;
+                        //     mgenotype = fgenotype = 0;
 
-                            for (i = 0; i < LH; i++)
-                            {
-                                for (j = 0; j < LV; j++)
-                                {
-                                    if (maleT[i][j] == 1 && maleP[i][j] == 1)
-                                        mgenotype = 1;
-                                    else if (maleT[i][j] == 1 && maleP[i][j] == 2)
-                                        mgenotype = 2;
-                                    else if (maleT[i][j] == 2 && maleP[i][j] == 1)
-                                        mgenotype = 3;
-                                    else if (maleT[i][j] == 2 && maleP[i][j] == 2)
-                                        mgenotype = 4;
-                                    if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
-                                        fgenotype = 1;
-                                    else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
-                                        fgenotype = 2;
-                                    else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
-                                        fgenotype = 3;
-                                    else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
-                                        fgenotype = 4;
-                                    recomap[i * LH + j].i = i;
-                                    recomap[i * LH + j].j = j;
-                                    recomap[i * LH + j].mgenotype = mgenotype;
-                                    recomap[i * LH + j].fgenotype = fgenotype;
-                                }
-                            }
-                            snapshot2 = fopen(snapshot_file2, "w");
-                            for (n = 0; n < LH * LV; n++)
-                            {
-                                fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
-                            }
-                            fclose(snapshot2);
-                            Map("male", snapshot_file2, K, mapinitP, t);
-                            Map("female", snapshot_file2, K, mapinitP, t);
-                        }
+                        //     for (i = 0; i < LH; i++)
+                        //     {
+                        //         for (j = 0; j < LV; j++)
+                        //         {
+                        //             if (maleT[i][j] == 1 && maleP[i][j] == 1)
+                        //                 mgenotype = 1;
+                        //             else if (maleT[i][j] == 1 && maleP[i][j] == 2)
+                        //                 mgenotype = 2;
+                        //             else if (maleT[i][j] == 2 && maleP[i][j] == 1)
+                        //                 mgenotype = 3;
+                        //             else if (maleT[i][j] == 2 && maleP[i][j] == 2)
+                        //                 mgenotype = 4;
+                        //             if (femaleT[i][j] == 1 && femaleP[i][j] == 1)
+                        //                 fgenotype = 1;
+                        //             else if (femaleT[i][j] == 1 && femaleP[i][j] == 2)
+                        //                 fgenotype = 2;
+                        //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 1)
+                        //                 fgenotype = 3;
+                        //             else if (femaleT[i][j] == 2 && femaleP[i][j] == 2)
+                        //                 fgenotype = 4;
+                        //             recomap[i * LH + j].i = i;
+                        //             recomap[i * LH + j].j = j;
+                        //             recomap[i * LH + j].mgenotype = mgenotype;
+                        //             recomap[i * LH + j].fgenotype = fgenotype;
+                        //         }
+                        //     }
+                        //     snapshot2 = fopen(snapshot_file2, "w");
+                        //     for (n = 0; n < LH * LV; n++)
+                        //     {
+                        //         fprintf(snapshot2, "%d\t%d\t%d\t%d\n", recomap[n].i, recomap[n].j, recomap[n].mgenotype, recomap[n].fgenotype);
+                        //     }
+                        //     fclose(snapshot2);
+                        //     Map("male", snapshot_file2, K, mapinitP, t);
+                        //     Map("female", snapshot_file2, K, mapinitP, t);
+                        // }
 
                         // 遺伝子型の割合出力
                         sum1 = sum2 = sum3 = sum4 = 0.0;
@@ -1040,12 +1084,12 @@ int main(void)
             if (fscanf(data3, "%d %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4) != 5)
                 return 1;
             // fscanf(data3, "%d %lf %lf %lf %lf", &x1, &gen1, &gen2, &gen3, &gen4);
-            if (fabs(gen1 - 0.0) < 1e-9 && fabs(gen2 - 0.0) < 1e-9)
+            if ((fabs(gen1 - 0.0) < 1e-6 && fabs(gen2 - 0.0) < 1e-6&& fabs(gen3 - 0.0) < 1e-6) || (fabs(gen1 - 0.0) < 1e-6 && fabs(gen2 - 0.0) < 1e-6&& fabs(gen4 - 0.0) < 1e-6))
             {
                 // 全部同じ遺伝子型になった場合、流れを出力しない
                 situ = 1;
             }
-            else if (fabs(gen1 - 1.0) < 1e-9)
+            else if (fabs(gen1 - 1.0) < 1e-6)
             {
                 // 全部同じ遺伝子型になった場合、流れを出力しない
                 situ = 3;
@@ -1207,7 +1251,7 @@ int main(void)
             }
 
             // free(snapshot_file1);
-            free(snapshot_file2);
+            // free(snapshot_file2);
             // free(snapshot_file3);
             free(data_file1);
             free(data_file2);
@@ -1217,29 +1261,39 @@ int main(void)
             free(data_file6);
             free(data_file7);
             free(data_file8);
+
+            
+            Threshold1[Threshold_count].k = K;
+            Threshold1[Threshold_count].u = u;
+            Threshold1[Threshold_count].situ = situ;
+            Threshold1[Threshold_count].gen1 = genorepo[geno_count-1].sum1;
+            Threshold1[Threshold_count].gen2 = genorepo[geno_count-1].sum2;
+            Threshold1[Threshold_count].gen3 = genorepo[geno_count-1].sum3;
+            Threshold1[Threshold_count].gen4 = genorepo[geno_count-1].sum4;
+            Threshold_count = Threshold_count + 1;
+            printf("K=%f u=%f situ=%d T1P1=%f T1P2=%f T2P1=%f T2P2=%f\n", K, u, situ,\
+                 genorepo[geno_count-1].sum1, genorepo[geno_count-1].sum2,\
+                  genorepo[geno_count-1].sum3, genorepo[geno_count-1].sum4);
         }
-        Threshold1[Threshold_count].s1 = s1;
-        Threshold1[Threshold_count].s2 = s2;
-        Threshold1[Threshold_count].k = K;
-        Threshold_count = Threshold_count + 1;
-        printf("K=%f s1=%f s2=%f\n", K, s1, s2);
+        
     }
     gp = fopen(data_file9, "w");
+    fprintf(gp, "K,u,situ,freq_T1P1,freq_T1P2,freq_T2P1,freq_T2P2\n");
     for (i = 0; i < Threshold_count; i++)
     {
-        fprintf(gp, "%f %f %f\n", Threshold1[i].k, Threshold1[i].s1, Threshold1[i].s2);
+        fprintf(gp, "%f %f %d %f %f %f %f\n", Threshold1[i].k, Threshold1[i].u, Threshold1[i].situ, Threshold1[i].gen1, Threshold1[i].gen2, Threshold1[i].gen3, Threshold1[i].gen4);
     }
     fclose(gp);
 
-    gp = popen("gnuplot -persist", "w");
-    fprintf(gp, "set terminal png\n");
-    fprintf(gp, "set output 'Genotype_Twoalleles/Threshold_initT2P1_%f.png'\n", initT2P1);
-    fprintf(gp, "set xrange [0:%f]\n", 0.5);
-    fprintf(gp, "set xlabel 'Female cost(K)'\n");
-    fprintf(gp, "set yrange [0:%f]\n", 0.9);
-    fprintf(gp, "set ylabel 'Male cost(U)'\n");
-    fprintf(gp, "plot \'%s\' using 1:2 with lines lw 2 lc rgb 'blue' title 'Threshold_coexistance',\'%s\' using 1:3 with lines lw 2 lc rgb 'red' title 'Threshold_extinction'\n", data_file9, data_file9);
-    pclose(gp);
+    // gp = popen("gnuplot -persist", "w");
+    // fprintf(gp, "set terminal png\n");
+    // fprintf(gp, "set output 'Genotype_Twoalleles/Threshold_initT2P1_%f.png'\n", initT2P1);
+    // fprintf(gp, "set xrange [0:%f]\n", 0.5);
+    // fprintf(gp, "set xlabel 'Female cost(K)'\n");
+    // fprintf(gp, "set yrange [0:%f]\n", 0.9);
+    // fprintf(gp, "set ylabel 'Male cost(U)'\n");
+    // fprintf(gp, "plot \'%s\' using 1:2 with lines lw 2 lc rgb 'blue' title 'Threshold_coexistance',\'%s\' using 1:3 with lines lw 2 lc rgb 'red' title 'Threshold_extinction'\n", data_file9, data_file9);
+    // pclose(gp);
 
     free(base_femalePdummy);
     free(base_femaleTdummy);
