@@ -286,8 +286,8 @@ int main(void)
 
     // RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
     // RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9*(tend + 1));
-    int buf_count = 0;
-    // data7(遺伝子頻度の書き込み用)
+    // int buf_count = 0;
+    // // data7(遺伝子頻度の書き込み用)
     typedef struct
     {
         int t;
@@ -361,9 +361,9 @@ int main(void)
     omp_set_num_threads(num_threads);
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
-    RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
-    RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
-    Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9 * (tend + 1));
+    // RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+    // RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+    // Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9 * (tend + 1));
 
     for (iK = 0; iK <= 11; iK++)
     { // iK=1;iK<=3;iK++
@@ -445,7 +445,14 @@ int main(void)
 
                         snapshot_file2 = malloc(100);
 
-                        buf_count = 0;
+                        Localpair *Pair = malloc(sizeof(Localpair) * 4 * (tend + 1));
+                        Localpair *Pair_freq = malloc(sizeof(Localpair) * 4 * (tend + 1));
+                        RecordT2P2 *buffer = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+                        RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
+                        Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9 * (tend + 1));
+                        Recordmap *recomap = malloc(sizeof(Recordmap) * LH * LV);
+
+                        int buf_count = 0;
                         geno_count = 0;
                         pair_count = 0;
                         freq_count = 0;
@@ -1192,219 +1199,222 @@ int main(void)
                                         buffer[buf_count].initT2P2 = initT2P2;
                                         buf_count++;
                                     }
-                                    Pair_freq[freq_count].t = t;
-                                    if (sum1 == 0 && sum4 == 0 && sum5 == 0 && sum9 == 0)
+                                    if (t < 50000)
                                     {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = 0.0;
+                                        Pair_freq[freq_count].t = t;
+                                        if (sum1 == 0 && sum4 == 0 && sum5 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum1 == 0 && sum4 == 0 && sum5 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum1 == 0 && sum4 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum1 == 0 && sum5 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum4 == 0 && sum5 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum1 == 0 && sum4 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum1 == 0 && sum5 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum1 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum4 == 0 && sum5 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum4 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum5 == 0 && sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else if (sum1 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = 0.0;
+                                            Pair_freq[freq_count].x41 = 0.0;
+                                            Pair_freq[freq_count].x51 = 0.0;
+                                            Pair_freq[freq_count].x91 = 0.0;
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum4 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = 0.0;
+                                            Pair_freq[freq_count].x54 = 0.0;
+                                            Pair_freq[freq_count].x94 = 0.0;
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum5 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = 0.0;
+                                            Pair_freq[freq_count].x95 = 0.0;
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        else if (sum9 == 0)
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = 0.0;
+                                        }
+                                        else
+                                        {
+                                            Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
+                                            Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
+                                            Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
+                                            Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
+                                        }
+                                        Pair_freq[freq_count].initT2P2 = initT2P2;
+                                        freq_count++;
+                                        for (i = 0; i < 10; i++)
+                                            sum_pair[i] = 0.0;
                                     }
-                                    else if (sum1 == 0 && sum4 == 0 && sum5 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum1 == 0 && sum4 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum1 == 0 && sum5 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum4 == 0 && sum5 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum1 == 0 && sum4 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum1 == 0 && sum5 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum1 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum4 == 0 && sum5 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum4 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum5 == 0 && sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else if (sum1 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = 0.0;
-                                        Pair_freq[freq_count].x41 = 0.0;
-                                        Pair_freq[freq_count].x51 = 0.0;
-                                        Pair_freq[freq_count].x91 = 0.0;
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum4 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = 0.0;
-                                        Pair_freq[freq_count].x54 = 0.0;
-                                        Pair_freq[freq_count].x94 = 0.0;
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum5 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = 0.0;
-                                        Pair_freq[freq_count].x95 = 0.0;
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    else if (sum9 == 0)
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = 0.0;
-                                    }
-                                    else
-                                    {
-                                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x41 = sum_pair[1] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x51 = sum_pair[2] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x91 = sum_pair[3] / ((double)4.0 * sum1);
-                                        Pair_freq[freq_count].x44 = sum_pair[4] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x54 = sum_pair[5] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x94 = sum_pair[6] / ((double)4.0 * sum4);
-                                        Pair_freq[freq_count].x55 = sum_pair[7] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x95 = sum_pair[8] / ((double)4.0 * sum5);
-                                        Pair_freq[freq_count].x99 = sum_pair[9] / ((double)4.0 * sum9);
-                                    }
-                                    Pair_freq[freq_count].initT2P2 = initT2P2;
-                                    freq_count++;
-                                    for (i = 0; i < 10; i++)
-                                        sum_pair[i] = 0.0;
                                 }
                             }
                         }
@@ -1646,8 +1656,8 @@ int main(void)
                             fprintf(gp, "set xrange [0:%d]\n", tend);
                             fprintf(gp, "set xlabel 't'\n");
                             fprintf(gp, "set yrange [0:%f]\n", 1.0);
-                            fprintf(gp, "set ylabel 'pair_frequency'\n");
-                            fprintf(gp, "titles='x_1/1 x_2/1 x_3/1 x_4/1 x_5/1 x_9/1 x_4/4 x_5/4 x_9/4 x_5/5 x_9/5 x_9/9'\n");
+                            fprintf(gp, "set ylabel 'Pair_frequency'\n");
+                            fprintf(gp, "titles='x1/1 x2/1 x3/1 x4/1 x5/1 x9/1 x4/4 x5/4 x9/4 x5/5 x9/5 x9/9'\n");
                             // 1. 赤 (Red): 最も目立つ基本色
                             fprintf(gp, "set style line 1 lc rgb \"#FF0000\" lw 2\n");
 
