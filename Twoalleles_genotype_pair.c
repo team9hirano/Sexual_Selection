@@ -279,31 +279,7 @@ int main(void)
     Localpair *Pair_freq = malloc(sizeof(Localpair) * 9 * (tend + 1));
     int freq_count = 0;
 
-    //"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
-    int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
-    mt_state *rng_states = malloc(sizeof(mt_state) * num_threads);
-    if (!rng_states)
-    {
-        perror("malloc rng_states");
-        return 1;
-    }
-
-    for (int tid = 0; tid < num_threads; tid++)
-    {
-        init_genrand_mt(&rng_states[tid], 5489UL + (unsigned long)tid * 12345UL);
-    }
-
-    omp_set_num_threads(num_threads);
-    printf("Using %d threads\n", num_threads);
-    fflush(stdout);
-
-    for (iK = 4; iK <= 17; iK++)
-    {
-        // K=(double)(iK*2-1)*0.00;
-        // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
-        K = (double)iK * 0.01; // K=0.04~0.17まで0.01刻み
-        printf("K:%f\n", K);
-        maleT = malloc(sizeof(int *) * LH);
+    maleT = malloc(sizeof(int *) * LH);
         maleP = malloc(sizeof(int *) * LH);
         femaleT = malloc(sizeof(int *) * LH);
         femaleP = malloc(sizeof(int *) * LH);
@@ -330,6 +306,32 @@ int main(void)
             femaleTdummy[i] = base_femaleTdummy + i * LV;
             femalePdummy[i] = base_femalePdummy + i * LV;
         }
+
+    //"%d\t%d\t%d\t%d\n",i,j,mgenotype,fgenotype
+    int num_threads = omp_get_num_procs(); // 最大利用可能スレッド数（論理コア数）
+    mt_state *rng_states = malloc(sizeof(mt_state) * num_threads);
+    if (!rng_states)
+    {
+        perror("malloc rng_states");
+        return 1;
+    }
+
+    for (int tid = 0; tid < num_threads; tid++)
+    {
+        init_genrand_mt(&rng_states[tid], 5489UL + (unsigned long)tid * 12345UL);
+    }
+
+    omp_set_num_threads(num_threads);
+    printf("Using %d threads\n", num_threads);
+    fflush(stdout);
+
+    for (iK = 4; iK <= 17; iK++)
+    {
+        // K=(double)(iK*2-1)*0.00;
+        // K = 0.1 + (double)iK * 0.01; // K=0.05~0.20まで0.01刻み
+        K = (double)iK * 0.01; // K=0.04~0.17まで0.01刻み
+        printf("K:%f\n", K);
+        
 
         init_genrand(0);
 
@@ -751,28 +753,65 @@ int main(void)
                     if (t % 100 == 0)
                     {
                         Pair[pair_count].t = t;
-                        if (sum1 == 0)
+                        if (sum1 == 0&&sum3==0&&sum4==0)
                         {
                             Pair[pair_count].x11 = 0.0;
                             Pair[pair_count].x21 = 0.0;
                             Pair[pair_count].x31 = 0.0;
-                        }
-                        if (sum3 == 0)
-                        {
                             Pair[pair_count].x22 = 0.0;
                             Pair[pair_count].x32 = 0.0;
-                        }
-                        if (sum4 == 0)
-                        {
                             Pair[pair_count].x33 = 0.0;
+                        }else if(sum1==0&&sum3==0){
+                            Pair[pair_count].x11 = 0.0;
+                            Pair[pair_count].x21 = 0.0;
+                            Pair[pair_count].x31 = 0.0;
+                            Pair[pair_count].x22 = 0.0;
+                            Pair[pair_count].x32 = 0.0;
+                            Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                        }else if(sum1==0&&sum4==0){
+                            Pair[pair_count].x11 = 0.0;
+                            Pair[pair_count].x21 = 0.0;
+                            Pair[pair_count].x31 = 0.0;
+                            Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                            Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                            Pair[pair_count].x33 = 0.0;
+                        }else if(sum1==0){
+                            Pair[pair_count].x11 = 0.0;
+                            Pair[pair_count].x21 = 0.0;
+                            Pair[pair_count].x31 = 0.0;
+                            Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                            Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                            Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
                         }
-
-                        Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                        Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
-                        Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
-                        Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
-                        Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
-                        Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                        else if(sum3==0&&sum4==0){
+                            Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                            Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                            Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                            Pair[pair_count].x22 = 0.0;
+                            Pair[pair_count].x32 = 0.0;
+                            Pair[pair_count].x33 = 0.0;
+                        }else if(sum3==0){
+                            Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                            Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                            Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                            Pair[pair_count].x22 = 0.0;
+                            Pair[pair_count].x32 = 0.0;
+                            Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                        }else if(sum4==0){
+                            Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                            Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                            Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                            Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                            Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                            Pair[pair_count].x33 = 0.0;
+                        }else{
+                            Pair[pair_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                            Pair[pair_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                            Pair[pair_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                            Pair[pair_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                            Pair[pair_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                            Pair[pair_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                        }
                         Pair[pair_count].initT2P1 = initT2P1;
                         pair_count++;
 
@@ -784,29 +823,67 @@ int main(void)
                         buffer[buf_count].initT2P1 = initT2P1;
                         buf_count++;
                     }
+
                     Pair_freq[freq_count].t = t;
-                    if (sum1 == 0)
+                    if (sum1 == 0&&sum3==0&&sum4==0)
                     {
                         Pair_freq[freq_count].x11 = 0.0;
                         Pair_freq[freq_count].x21 = 0.0;
                         Pair_freq[freq_count].x31 = 0.0;
-                    }
-                    if (sum3 == 0)
-                    {
                         Pair_freq[freq_count].x22 = 0.0;
                         Pair_freq[freq_count].x32 = 0.0;
-                    }
-                    if (sum4 == 0)
-                    {
                         Pair_freq[freq_count].x33 = 0.0;
+                    }else if(sum1==0&&sum3==0){
+                        Pair_freq[freq_count].x11 = 0.0;
+                        Pair_freq[freq_count].x21 = 0.0;
+                        Pair_freq[freq_count].x31 = 0.0;
+                        Pair_freq[freq_count].x22 = 0.0;
+                        Pair_freq[freq_count].x32 = 0.0;
+                        Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    }else if(sum1==0&&sum4==0){
+                        Pair_freq[freq_count].x11 = 0.0;
+                        Pair_freq[freq_count].x21 = 0.0;
+                        Pair_freq[freq_count].x31 = 0.0;
+                        Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x33 = 0.0;
+                    }else if(sum1==0){  
+                        Pair_freq[freq_count].x11 = 0.0;
+                        Pair_freq[freq_count].x21 = 0.0;
+                        Pair_freq[freq_count].x31 = 0.0;
+                        Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
                     }
-
-                    Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
-                    Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
-                    Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
-                    Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
-                    Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
-                    Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    else if(sum3==0&&sum4==0){
+                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x22 = 0.0;
+                        Pair_freq[freq_count].x32 = 0.0;
+                        Pair_freq[freq_count].x33 = 0.0;
+                    }else if(sum3==0){
+                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x22 = 0.0;
+                        Pair_freq[freq_count].x32 = 0.0;
+                        Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    }else if(sum4==0){
+                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x33 = 0.0;
+                    }else{
+                        Pair_freq[freq_count].x11 = sum_pair[0] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x21 = sum_pair[1] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x31 = sum_pair[2] / ((double)4.0 * sum1);
+                        Pair_freq[freq_count].x22 = sum_pair[3] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x32 = sum_pair[4] / ((double)4.0 * sum3);
+                        Pair_freq[freq_count].x33 = sum_pair[5] / ((double)4.0 * sum4);
+                    }
                     Pair_freq[freq_count].initT2P1 = initT2P1;
                     freq_count++;
                     for (i = 0; i < 6; i++)
@@ -1019,22 +1096,7 @@ int main(void)
             pclose(gp);
         }
 
-        free(base_femalePdummy);
-        free(base_femaleTdummy);
-        free(base_malePdummy);
-        free(base_maleTdummy);
-        free(base_femaleP);
-        free(base_femaleT);
-        free(base_maleP);
-        free(base_maleT);
-        free(femalePdummy);
-        free(femaleTdummy);
-        free(malePdummy);
-        free(maleTdummy);
-        free(femaleP);
-        free(femaleT);
-        free(maleP);
-        free(maleT);
+        
         // free(snapshot_file1);
         // free(snapshot_file2);
         // free(snapshot_file3);
@@ -1051,6 +1113,23 @@ int main(void)
     free(genorepo);
     free(rng_states);
     free(Pair);
+    free(Pair_freq);
+    free(base_femalePdummy);
+        free(base_femaleTdummy);
+        free(base_malePdummy);
+        free(base_maleTdummy);
+        free(base_femaleP);
+        free(base_femaleT);
+        free(base_maleP);
+        free(base_maleT);
+        free(femalePdummy);
+        free(femaleTdummy);
+        free(malePdummy);
+        free(maleTdummy);
+        free(femaleP);
+        free(femaleT);
+        free(maleP);
+        free(maleT);
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1e-9;
