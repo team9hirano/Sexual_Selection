@@ -17,7 +17,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 #define a1 3.0 // P2メスがT2オスを選好する倍率3.0
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 70000 // 4000 80000 10000 70000
+#define tend 140000 // 4000 80000 10000 70000
 #define mapinitP 0.25
 #define initialP 3
 #define initialT 1
@@ -333,7 +333,7 @@ int main(void)
     omp_set_num_threads(num_threads);
     printf("Using %d threads\n", num_threads);
     fflush(stdout);
-    data_file9 = "Twoalleles_threshold_result_Rogistic.csv";
+    data_file9 = "Twoalleles_threshold_result_Rogistic2.csv";
 
     for (iK = 0; iK <= 7; iK++)
     {
