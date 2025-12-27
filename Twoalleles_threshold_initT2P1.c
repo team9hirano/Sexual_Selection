@@ -336,7 +336,7 @@ int main(void)
 
     for (iK = 1; iK <= 1; iK++)
     {
-        K = (double)(iK * 2 - 1) * 0.05;
+        K = (double)(iK * 2 - 1) * 0.13;
 
         data_file9 = malloc(100);
         sprintf(data_file9, "Twoalleles_threshold_initT2P1_K_%f.csv", K);
@@ -1055,9 +1055,33 @@ int main(void)
                                 // 全部同じ遺伝子型になった場合、流れを出力しない
                                 situ = 3;
                             }
-                            else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum4 - 0.0) < 1e-6) || (fabs(sum2 - 0.0) < 1e-6 && fabs(sum3 - 0.0) < 1e-6) || (fabs(sum1 - 0.0) < 1e-6 && fabs(sum2 - 0.0) < 1e-6))
+                            else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum4 - 0.0) < 1e-6))
                             {
-                                situ = 1;
+                                if (sum3 > buffer[buf_count - 2].geno3)
+                                {
+                                    // T2P1のみが残った場合
+                                    situ = 1;
+                                }
+                                else
+                                {
+                                    situ = 3;
+                                }
+                            }
+                            else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum3 - 0.0) < 1e-6))
+                            {
+                                if (sum4 > buffer[buf_count - 2].geno4)
+                                {
+                                    // T2P2のみが残った場合
+                                    situ = 1;
+                                }
+                                else
+                                {
+                                    situ = 3;
+                                }
+                            }
+                            else if ((fabs(sum1 - 0.0) < 1e-6 && fabs(sum2 - 0.0) < 1e-6))
+                            {
+                                situ = 3;
                             }
                             else
                             {
@@ -1152,6 +1176,7 @@ int main(void)
                 // 全部同じ遺伝子型になった場合、流れを出力しない
                 situ = 3;
             }
+
             else
             {
                 situ = 2;
@@ -1207,7 +1232,7 @@ int main(void)
                 initT2P1 = (double)0.1 * i;
                 gp = popen("gnuplot -persist", "w");
                 fprintf(gp, "set terminal png\n");
-                fprintf(gp, "set output 'Genotype_Twoalleles_genoport_initT2P1/Two_env_genoport_K_%f_a1_%f_initT2P1_%f.png'\n", K, a1, initT2P1);
+                fprintf(gp, "set output 'Genotype_Twoalleles_genoport_initT2P1/Two_env_genoport_K_%f_u_%f_a1_%f_initT2P1_%f.png'\n", K, u, a1, initT2P1);
                 fprintf(gp, "set xrange [0:%d]\n", tend);
                 fprintf(gp, "set xlabel 't'\n");
                 fprintf(gp, "set yrange [0:%f]\n", 1.0);
