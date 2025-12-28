@@ -339,7 +339,7 @@ int main(void)
         K = (double)(iK * 2 - 1) * 0.13;
 
         data_file9 = malloc(100);
-        sprintf(data_file9, "Twoalleles_threshold_initT2P1_K_%f.csv", K);
+        sprintf(data_file9, "Twoalleles_threshold_initT2P1_K_%f_ver2.csv", K);
         // if (iK == 0)
         //     K = 0.0;
         // else if (iK == 1)
@@ -363,25 +363,42 @@ int main(void)
         situ = 0;
         printf("K:%f\n", K);
         count = 0;
-        for (iu = 0; iu <= 7; iu++) // 20
+        for (iu = 0; iu <= 2; iu++) // 20
         {
             // u = 0.0 + (double)iu * 0.025;
+            // if (iu == 0)
+            //     u = 0.0;
+            // else if (iu == 1)
+            //     u = 0.01;
+            // else if (iu == 2)
+            //     u = 0.05;
+            // else if (iu == 3)
+            //     u = 0.1;
+            // else if (iu == 4)
+            //     u = 0.15;
+            // else if (iu == 5)
+            //     u = 0.2;
+            // else if (iu == 6)
+            //     u = 0.3;
+            // else if (iu == 7)
+            //     u = 0.5;
+
             if (iu == 0)
-                u = 0.0;
+                u = 0.25;
             else if (iu == 1)
-                u = 0.01;
+                u = 0.35;
             else if (iu == 2)
-                u = 0.05;
-            else if (iu == 3)
-                u = 0.1;
-            else if (iu == 4)
-                u = 0.15;
-            else if (iu == 5)
-                u = 0.2;
-            else if (iu == 6)
-                u = 0.3;
-            else if (iu == 7)
-                u = 0.5;
+                u = 0.40;
+            // else if (iu == 3)
+            //     u = 0.1;
+            // else if (iu == 4)
+            //     u = 0.15;
+            // else if (iu == 5)
+            //     u = 0.2;
+            // else if (iu == 6)
+            //     u = 0.3;
+            // else if (iu == 7)
+            //     u = 0.5;
 
             // printf("更新前 iu:%d,u:%f,curs1:%f,curs2:%f,curs3:%f,count:%dsitu:%d\n",
             //        iu, u, curs1, curs2, curs3, count, situ);
@@ -1057,7 +1074,7 @@ int main(void)
                             }
                             else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum4 - 0.0) < 1e-6))
                             {
-                                if (sum3 > buffer[buf_count - 2].geno3)
+                                if (sum3 > buffer[buf_count - 12].geno3)
                                 {
                                     // T2P1のみが残った場合
                                     situ = 1;
@@ -1069,7 +1086,7 @@ int main(void)
                             }
                             else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum3 - 0.0) < 1e-6))
                             {
-                                if (sum4 > buffer[buf_count - 2].geno4)
+                                if (sum4 > buffer[buf_count - 12].geno4)
                                 {
                                     // T2P2のみが残った場合
                                     situ = 1;
@@ -1081,7 +1098,7 @@ int main(void)
                             }
                             else if ((fabs(sum1 - 0.0) < 1e-6 && fabs(sum2 - 0.0) < 1e-6))
                             {
-                                situ = 3;
+                                situ = 1;
                             }
                             else
                             {
@@ -1227,7 +1244,7 @@ int main(void)
             // fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
             // pclose(gp);
 
-            for (i = 1; i <= 9; i++)
+            for (i = 0; i <= 9; i++)
             {
                 initT2P1 = (double)0.1 * i;
                 gp = popen("gnuplot -persist", "w");
