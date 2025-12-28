@@ -336,7 +336,7 @@ int main(void)
 
     for (iK = 1; iK <= 1; iK++)
     {
-        K = (double)(iK * 2 - 1) * 0.13;
+        K = (double)(iK * 2 - 1) * 0.14;
 
         data_file9 = malloc(100);
         sprintf(data_file9, "Twoalleles_threshold_initT2P1_K_%f_ver2.csv", K);
@@ -363,32 +363,38 @@ int main(void)
         situ = 0;
         printf("K:%f\n", K);
         count = 0;
-        for (iu = 0; iu <= 2; iu++) // 20
+        for (iu = 0; iu <= 10; iu++) // 20
         {
             // u = 0.0 + (double)iu * 0.025;
-            // if (iu == 0)
-            //     u = 0.0;
-            // else if (iu == 1)
-            //     u = 0.01;
-            // else if (iu == 2)
-            //     u = 0.05;
-            // else if (iu == 3)
-            //     u = 0.1;
-            // else if (iu == 4)
-            //     u = 0.15;
-            // else if (iu == 5)
-            //     u = 0.2;
-            // else if (iu == 6)
-            //     u = 0.3;
-            // else if (iu == 7)
-            //     u = 0.5;
-
             if (iu == 0)
-                u = 0.25;
+                u = 0.0;
             else if (iu == 1)
-                u = 0.35;
+                u = 0.01;
             else if (iu == 2)
-                u = 0.40;
+                u = 0.05;
+            else if (iu == 3)
+                u = 0.1;
+            else if (iu == 4)
+                u = 0.15;
+            else if (iu == 5)
+                u = 0.2;
+            else if (iu == 6)
+                u = 0.25;
+            else if (iu == 7)
+                u = 0.3;
+            else if (iu == 8)
+                u = 0.35;
+            else if (iu == 9)
+                u = 0.4;
+            else if (iu == 10)
+                u = 0.5;
+
+            // if (iu == 0)
+            //     u = 0.25;
+            // else if (iu == 1)
+            //     u = 0.35;
+            // else if (iu == 2)
+            //     u = 0.40;
             // else if (iu == 3)
             //     u = 0.1;
             // else if (iu == 4)
