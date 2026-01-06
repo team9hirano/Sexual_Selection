@@ -23,7 +23,7 @@
 #define initialT 1
 #define SAVE_INTERVAL 100 // 100世代ごとに書き出し
 #define MAX_SAVE ((tend / SAVE_INTERVAL) + 2)
-#define N_SEED 3
+#define N_SEED 5
 // #define MAX_THREADS 12
 
 void Map(const char *sex, const char *filename, double K, double initP, int t)
@@ -996,6 +996,11 @@ int main(void)
                         //     Map("female", snapshot_file2, K, mapinitP, t);
                         // }
 
+                        
+
+                        if (t % 100 == 0)
+                    {
+
                         // 遺伝子型の割合出力
                         sum1 = sum2 = sum3 = sum4 = 0.0;
                         // data7=fopen(data_file7,"a");
@@ -1021,8 +1026,6 @@ int main(void)
                         genorepo[geno_count].sum4 = (double)sum4 / (double)(LH * LV);
                         geno_count++;
 
-                        if (t % 100 == 0)
-                    {
                         Pair[pair_count].t = t;
                         if (sum1 == 0&&sum3==0&&sum4==0)
                         {
@@ -1093,9 +1096,8 @@ int main(void)
                         buffer[buf_count].geno4 = (double)sum4 / (double)(LH * LV);
                         buffer[buf_count].initT2P1 = initT2P1;
                         buf_count++;
-                    }
 
-                    Pair_freq[freq_count].t = t;
+                        Pair_freq[freq_count].t = t;
                     if (sum1 == 0&&sum3==0&&sum4==0)
                     {
                         Pair_freq[freq_count].x11 = 0.0;
@@ -1159,6 +1161,9 @@ int main(void)
                     freq_count++;
                     for (i = 0; i < 6; i++)
                         sum_pair[i] = 0.0;
+                    }
+
+                    
 
                         if (t == tend)
                         {
@@ -1179,7 +1184,7 @@ int main(void)
                             }
                             else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum4 - 0.0) < 1e-6))
                             {
-                                if (sum3 > buffer[buf_count - 120].geno3 || fabs(sum3-buffer[buf_count - 120].geno3)<0.05)
+                                if (sum3 > buffer[buf_count - 120].geno3/ (double)(LH * LV) || fabs(sum3-buffer[buf_count - 120].geno3/ (double)(LH * LV))<0.05)
                                 {
                                     // T2P1のみが残った場合
                                     situ = 1;
@@ -1192,7 +1197,7 @@ int main(void)
                             }
                             else if ((fabs(sum2 - 0.0) < 1e-6 && fabs(sum3 - 0.0) < 1e-6))
                             {
-                                if (sum4 > buffer[buf_count - 120].geno4  || fabs(sum4-buffer[buf_count - 120].geno4)<0.05)
+                                if (sum4 > buffer[buf_count - 120].geno4/ (double)(LH * LV)  || fabs(sum4-buffer[buf_count - 120].geno4/ (double)(LH * LV))<0.05)
                                 {
                                     // T2P2のみが残った場合
                                     situ = 1;
@@ -1350,13 +1355,13 @@ int main(void)
             // fprintf(gp, "set ylabel 'T2P2'\n");
             // fprintf(gp, "plot \'%s\' using 2:5 with points pointtype 7 lc rgb 'blue' title \"survivalrateK=%f\",\'%s\' using 1:3:($4-$1):($6-$3) with vectors head filled lc rgb 'blue',\'%s\' using 2:5 with points pointtype 7 lc rgb 'red' title \"finalarrival\"\n", data_file1, K, data_file2, data_file3);
             // pclose(gp);
-            int block=(tend+1)*N_SEED;
+            int block=(tend/100+1)*N_SEED;
             for (i = 1; i <= 10; i++)
             {
                 initT2P1 = (double)0.1 * (i-1);
                 int base=(i - 1) * block;
                 int start=base;
-                int end=base + tend;
+                int end=base + tend/100;
                 gp = popen("gnuplot -persist", "w");
                 fprintf(gp, "set terminal png\n");
                 fprintf(gp, "set output 'Genotype_Twoalleles_genoport_initT2P1/Two_env_genoport_K_%f_u_%f_a1_%f_initT2P1_%f.png'\n", K, u, a1, initT2P1);
@@ -1437,14 +1442,14 @@ int main(void)
             //         pclose(gp);
             //     }
             // }
-            block=(tend+1)*N_SEED;
+            block=(tend/100+1)*N_SEED;
             for (i = 0; i <= 9; i++) // i = 1; i <= 4; i++
             {
                 // initT2P1 = (double)0.2 * i;
                 initT2P1 = (double)0.1 * i;
                 int base=(i)* block;
                 int start=base;
-                int end=base + tend;
+                int end=base + tend/100;
                 gp = popen("gnuplot -persist", "w");
                 fprintf(gp, "set terminal png\n");
                 fprintf(gp, "set output 'Genotype_Twoalleles_pair/Two_env_pair_K_%f_u_%f_a1_%f_initT2P1_%f.png'\n", K, u, a1, initT2P1);
