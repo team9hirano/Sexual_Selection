@@ -15,7 +15,7 @@
 // #define l 0.15  //T2オスのコスト(0<l<u)
 // #define a1 3.0    // P2メスがT2オスを選好する倍率
 // #define a2 6.0    // P3メスがT3オスを選好する倍率
-#define tend 150000 // 4000 80000 10000 80000
+#define tend 100000 // 4000 80000 10000 80000
 #define mapinitP 0.5
 #define initialP 3
 #define initialT 1
@@ -365,32 +365,32 @@ int main(void)
     // RecordT2P2 *buft3p3 = malloc(sizeof(RecordT2P2) * 9 * (tend + 1));
     // Recordgenoport *genorepo = malloc(sizeof(Recordgenoport) * 9 * (tend + 1));
 
-    for (iK = 0; iK <= 11; iK++)
+    for (iK = 0; iK <= 4; iK++)
     { // iK=1;iK<=3;iK++
         if (iK == 0)
             K = 0.05;
         else if (iK == 1)
-            K = 0.1;
-        else if (iK == 2)
-            K = 0.11;
-        else if (iK == 3)
             K = 0.115;
-        else if (iK == 4)
+        else if (iK == 2)
             K = 0.12;
-        else if (iK == 5)
-            K = 0.125;
-        else if (iK == 6)
-            K = 0.13;
-        else if (iK == 7)
-            K = 0.14;
-        else if (iK == 8)
-            K = 0.15;
-        else if (iK == 9)
+        else if (iK == 3)
             K = 0.2;
-        else if (iK == 10)
-            K = 0.25;
-        else if (iK == 11)
-            K = 0.3;
+        else if (iK == 4)
+            K = 0.6;
+        else if (iK == 5)
+            K = 0.6;
+        // else if (iK == 6)
+        //     K = 0.13;
+        // else if (iK == 7)
+        //     K = 0.14;
+        // else if (iK == 8)
+        //     K = 0.15;
+        // else if (iK == 9)
+        //     K = 0.2;
+        // else if (iK == 10)
+        //     K = 0.25;
+        // else if (iK == 11)
+        //     K = 0.3;
         // K = 0.05 + (double)0.01 * (double)iK;
         // K=0.11+(double)iK*0.001;
         for (iV = 2; iV <= 2; iV++)
@@ -1199,7 +1199,7 @@ int main(void)
                                         buffer[buf_count].initT2P2 = initT2P2;
                                         buf_count++;
                                     }
-                                    if (t < 50000)
+                                    if (t <= 50000)
                                     {
                                         Pair_freq[freq_count].t = t;
                                         if (sum1 == 0 && sum4 == 0 && sum5 == 0 && sum9 == 0)
@@ -1412,9 +1412,9 @@ int main(void)
                                         }
                                         Pair_freq[freq_count].initT2P2 = initT2P2;
                                         freq_count++;
-                                        for (i = 0; i < 10; i++)
-                                            sum_pair[i] = 0.0;
                                     }
+                                    for (i = 0; i < 10; i++)
+                                        sum_pair[i] = 0.0;
                                 }
                             }
                         }
@@ -1653,38 +1653,29 @@ int main(void)
                             gp = popen("gnuplot -persist", "w");
                             fprintf(gp, "set terminal png\n");
                             fprintf(gp, "set output 'Genotype_Threealleles_pair/Three_env_pair_K_%f_a1_%f_initT2P2_%f.png'\n", K, a1, initT2P2);
-                            fprintf(gp, "set xrange [0:%d]\n", tend);
+                            fprintf(gp, "set xrange [0:%d]\n", 50000);
                             fprintf(gp, "set xlabel 't'\n");
                             fprintf(gp, "set yrange [0:%f]\n", 1.0);
                             fprintf(gp, "set ylabel 'Pair_frequency'\n");
-                            fprintf(gp, "titles='x1/1 x2/1 x3/1 x4/1 x5/1 x9/1 x4/4 x5/4 x9/4 x5/5 x9/5 x9/9'\n");
+                            fprintf(gp, "titles='x1/1 x4/1 x5/1 x9/1 x4/4 x5/4 x9/4 x5/5 x9/5 x9/9'\n");
                             // 1. 赤 (Red): 最も目立つ基本色
                             fprintf(gp, "set style line 1 lc rgb \"#FF0000\" lw 2\n");
-
                             // 2. 青 (Blue): 赤と対比する基本色
                             fprintf(gp, "set style line 2 lc rgb \"#0000FF\" lw 2\n");
-
                             // 3. 濃い緑 (Dark Green): 黄緑だと見にくいので、濃い緑を採用
                             fprintf(gp, "set style line 3 lc rgb \"#008000\" lw 2\n");
-
                             // 4. マゼンタ (Magenta): 紫より明るく、赤や青と区別しやすい
                             fprintf(gp, "set style line 4 lc rgb \"#FF00FF\" lw 2\n");
-
                             // 5. オレンジ (Orange-Red): 黄色の代わり。赤とは区別できる濃さ
                             fprintf(gp, "set style line 5 lc rgb \"#FF4500\" lw 2\n");
-
                             // 6. 黒 (Black): 最も収縮する色。全体を引き締める
                             fprintf(gp, "set style line 6 lc rgb \"#000000\" lw 2\n");
-
                             // 7. ティール/青緑 (Teal): 水色は見にくいので、濃い青緑
                             fprintf(gp, "set style line 7 lc rgb \"#008080\" lw 2\n");
-
                             // 8. 紫 (Purple): マゼンタや青とは違う、深い紫
                             fprintf(gp, "set style line 8 lc rgb \"#800080\" lw 2\n");
-
                             // 9. 茶色 (Saddle Brown): 黄色系だが暗いので白背景ではっきり見える
                             fprintf(gp, "set style line 9 lc rgb \"#8B4513\" lw 2\n");
-
                             // 10. 濃いグレー (Dark Gray): 黒とは区別できるが、線として認識できる濃さ
                             fprintf(gp, "set style line 10 lc rgb \"#555555\" lw 2\n");
                             // fprintf(gp, "set style line 1 lc rgb \"#0000FF\" lw 2\n");
@@ -1698,7 +1689,7 @@ int main(void)
                             // fprintf(gp, "set style line 9 lc rgb \"#FF00FF\" lw 2\n");
                             // fprintf(gp, "set style line 10 lc rgb \"#FF8800\" lw 2\n");
 
-                            fprintf(gp, "plot for [j=2:10] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file8, (i - 1) * (tend + 1), i * (tend + 1) - 1);
+                            fprintf(gp, "plot for [j=2:10] \'%s\' every ::%d::%d using 1:j with lines ls (j-1) title word(titles, j-1)\n", data_file8, (i - 1) * (50000 + 1), i * (50000 + 1) - 1);
                             pclose(gp);
                         }
 
@@ -1719,6 +1710,8 @@ int main(void)
                         free(buft3p3);
                         free(recomap);
                         free(genorepo);
+                        free(Pair);
+                        free(Pair_freq);
                     }
                 }
             }
